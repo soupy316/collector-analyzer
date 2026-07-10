@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>collector_analyzer | Local Workspace Infrastructure Suite</title>
+    <title>collector_analyzer | Enterprise Repository Suite</title>
     <!-- Tailwind CSS v4 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- SheetJS (XLSX Parser) -->
@@ -20,15 +20,16 @@
                 <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
-                    <p class="text-xs text-slate-400">Comprehensive Local Workspace & 21-Tab Infrastructure Assessment Suite</p>
+                    <p class="text-xs text-slate-400">Comprehensive Local Repository & 21-Tab Infrastructure Assessment Suite</p>
                 </div>
             </div>
             
-            <!-- File Input Upload (Only active when project folder is initialized) -->
-            <div class="flex items-center gap-3">
-                <label id="uploadLabel" class="hidden items-center gap-2.5 px-4 py-2 bg-slate-800 hover:bg-slate-750 border border-slate-700/60 hover:border-slate-600 rounded-xl cursor-pointer transition-all text-sm font-medium shadow-inner group">
-                    <svg class="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                    <span class="text-slate-200">Parse & Save Spreadsheet</span>
+            <!-- File Input Upload (Active when a project folder is initialized) -->
+            <div id="uploadZone" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <input type="text" id="txtLocationName" placeholder="Saved File Name (e.g., Chicago_DC1)..." class="px-3 py-2 bg-slate-900 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-medium w-full sm:w-64">
+                <label class="flex items-center justify-center gap-2.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl cursor-pointer transition-all text-sm font-medium shadow-lg shadow-indigo-600/10 group whitespace-nowrap">
+                    <svg class="w-4 h-4 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span class="text-white">Process & Add Spreadsheet</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
                 </label>
             </div>
@@ -38,25 +39,67 @@
     <main class="max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8">
         
         <!-- Local Directory Workspace Control Bar -->
-        <div class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
-            <div class="flex items-center gap-3">
-                <div id="workspaceIndicator" class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-lg shadow-rose-500/40"></div>
+        <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 shadow-xl backdrop-blur-sm">
+            <div class="flex items-center gap-4">
+                <div id="workspaceIndicator" class="w-3 h-3 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50 shrink-0"></div>
                 <div>
-                    <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Mac File System Workspace Workspace</h2>
-                    <p id="workspacePath" class="text-xs text-slate-500 mt-0.5">No root workspace directory initialized yet.</p>
+                    <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Local Collector Repository</h2>
+                    <p id="workspacePath" class="text-xs text-slate-500 mt-0.5 font-medium">No root workspace repository connected yet.</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3 w-full md:w-auto">
-                <button id="btnSelectWorkspace" class="w-full md:w-auto px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10">
-                    Set Local Root Directory
+
+            <div class="flex items-center gap-4 w-full lg:w-auto justify-end">
+                <!-- Step 1: Initial Connection -->
+                <button id="btnSelectWorkspace" class="w-full lg:w-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/15">
+                    Set Local Repository Path
                 </button>
-                <div id="projectControls" class="hidden items-center gap-2 w-full md:w-auto">
-                    <input type="text" id="txtProjectName" placeholder="Enter Customer/Project ID..." class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-medium">
-                    <button id="btnLoadOrCreateProject" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition-all cursor-pointer">
-                        Initialize Project Folder
+
+                <!-- Step 2: Advanced Customer Selection Interface -->
+                <div id="projectControls" class="hidden flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                    
+                    <!-- Searchable Customer Dropdown Selection Layout -->
+                    <div class="relative flex-1 sm:w-72">
+                        <select id="selCustomer" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer">
+                            <option value="">-- Select Existing Customer --</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                    </div>
+
+                    <!-- Filter search box -->
+                    <input type="text" id="txtCustomerSearch" placeholder="🔍 Quick search list..." class="px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 placeholder-slate-600 focus:outline-none w-full sm:w-36" title="Filter the dropdown customer inventory list">
+
+                    <!-- Actions -->
+                    <button id="btnOpenCustomer" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer whitespace-nowrap">
+                        Open Customer Folder
+                    </button>
+
+                    <div class="h-6 w-px bg-slate-800 hidden sm:block"></div>
+
+                    <!-- Trigger New Customer Layout creation -->
+                    <button id="btnTriggerCreateMode" class="px-3 py-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 font-medium text-xs rounded-xl transition-all cursor-pointer whitespace-nowrap">
+                        + New Customer
+                    </button>
+                </div>
+
+                <!-- Step 2b: Inline Dynamic Creator Interface -->
+                <div id="createControls" class="hidden items-center gap-3 w-full lg:w-auto transition-all">
+                    <input type="text" id="txtNewCustomerName" placeholder="Enter New Customer Name..." class="px-3 py-2 bg-slate-950 border border-indigo-500/40 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-semibold w-full sm:w-64">
+                    <button id="btnCreateCustomer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer whitespace-nowrap">
+                        Create Folder
+                    </button>
+                    <button id="btnCancelCreate" class="text-xs text-slate-400 hover:text-slate-200 px-2 py-1 font-medium cursor-pointer">
+                        Cancel
                     </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Available Collector Sub-Files Index Bar -->
+        <div id="locationSelectorZone" class="hidden bg-slate-900/30 border border-slate-800/60 px-4 py-3 rounded-xl mb-6 items-center gap-4 overflow-x-auto">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Available Project Records:</span>
+            <div id="locationChipContainer" class="flex items-center gap-2"></div>
         </div>
 
         <!-- Welcome Screen (Pre-upload Empty State) -->
@@ -64,13 +107,12 @@
             <div class="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-5 shadow-inner">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2zm5-2V3a1 1 0 011-1h6a1 1 0 011 1v2M5 7h14"/></svg>
             </div>
-            <h2 id="welcomeHeader" class="text-xl font-bold text-slate-100 tracking-tight mb-2">Workspace Setup Required</h2>
-            <p id="welcomeText" class="text-slate-400 text-sm leading-relaxed max-w-md">To get started, click the button above to authorize your web app to read and write folders inside a project catalog on your Mac local filesystem.</p>
+            <h2 id="welcomeHeader" class="text-xl font-bold text-slate-100 tracking-tight mb-2">Repository Mapping Required</h2>
+            <p id="welcomeText" class="text-slate-400 text-sm leading-relaxed max-w-md">To get started, map your root database folder by choosing **Set Local Repository Path** above to manage multi-site assignments natively on disk.</p>
         </div>
 
-        <!-- Dashboard UI Workspace (Hidden until file is loaded successfully) -->
+        <!-- Dashboard UI Workspace -->
         <div id="dashboardState" class="hidden space-y-6">
-            
             <!-- Global Inventory Rollup KPIs -->
             <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm">
@@ -99,71 +141,47 @@
                 </div>
             </div>
 
-            <!-- Main Charts Analytics Block -->
+            <!-- Charts and Tables -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Compute Provisioning Ratios -->
                 <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]">
                     <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Cluster Host Workload Densities</h3>
-                    <div class="relative flex-1 min-h-0">
-                        <canvas id="clusterDensityChart"></canvas>
-                    </div>
+                    <div class="relative flex-1 min-h-0"><canvas id="clusterDensityChart"></canvas></div>
                 </div>
-
-                <!-- Datastore Allocations -->
                 <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]">
                     <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Datastore Capacity Profiles (TB)</h3>
-                    <div class="relative flex-1 min-h-0">
-                        <canvas id="datastoreChart"></canvas>
-                    </div>
+                    <div class="relative flex-1 min-h-0"><canvas id="datastoreChart"></canvas></div>
                 </div>
-
-                <!-- VM Resource Optimization Analysis -->
                 <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">VM Provisioning Metrics vs 95th % Profiles</h3>
-                    <div class="relative flex-1 min-h-0">
-                        <canvas id="vmOptimizationChart"></canvas>
-                    </div>
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">VM Resource Optimization Analysis</h3>
+                    <div class="relative flex-1 min-h-0"><canvas id="vmOptimizationChart"></canvas></div>
                 </div>
             </div>
 
-            <!-- Multi-tab Optimization and Alerts Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Active Storage Risks: Snapshot Footprint -->
                 <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4">
                     <div>
                         <h3 class="text-sm font-bold text-slate-200">Active Storage Risks: Snapshot Footprint</h3>
-                        <p class="text-xs text-slate-400">Orphaned or forgotten checkpoints consuming block storage layers</p>
+                        <p class="text-xs text-slate-400">Orphaned checkpoints consuming block storage layers</p>
                     </div>
                     <div class="overflow-y-auto max-h-[250px] border border-slate-800/60 rounded-lg">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800">
-                                    <th class="p-2.5">VM Name</th>
-                                    <th class="p-2.5">Snapshot Label</th>
-                                    <th class="p-2.5 text-right">Size (MiB)</th>
-                                </tr>
+                                <tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800"><th class="p-2.5">VM Name</th><th class="p-2.5">Snapshot Label</th><th class="p-2.5 text-right">Size (MiB)</th></tr>
                             </thead>
                             <tbody id="snapshotTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Hardware Assets & GPU Matrix -->
                 <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4">
                     <div>
                         <h3 class="text-sm font-bold text-slate-200">Physical Compute Node Fleet Inventory</h3>
-                        <p class="text-xs text-slate-400">Underlying compute topology, processor cores, and virtualization kernels</p>
+                        <p class="text-xs text-slate-400">Underlying compute topology and cores</p>
                     </div>
                     <div class="overflow-y-auto max-h-[250px] border border-slate-800/60 rounded-lg">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800">
-                                    <th class="p-2.5">Host Name</th>
-                                    <th class="p-2.5">Hardware Model</th>
-                                    <th class="p-2.5 text-center">Cores / CPUs</th>
-                                    <th class="p-2.5 text-right">RAM Size</th>
-                                    <th class="p-2.5 text-right">NVIDIA GPUs</th>
-                                </tr>
+                                <tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800"><th class="p-2.5">Host Name</th><th class="p-2.5">Hardware Model</th><th class="p-2.5 text-center">Cores / CPUs</th><th class="p-2.5 text-right">RAM Size</th><th class="p-2.5 text-right">NVIDIA GPUs</th></tr>
                             </thead>
                             <tbody id="hostTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
                         </table>
@@ -175,24 +193,15 @@
             <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 overflow-hidden shadow-2xl">
                 <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/20">
                     <div>
-                        <h3 class="text-sm font-bold text-slate-200">Infrastructure Workload Ledger & Optimization Analysis</h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Cross-referencing vInfo allocations with 95th Percentile CPU/Memory workloads</p>
+                        <h3 class="text-sm font-bold text-slate-200">Infrastructure Workload Ledger</h3>
                     </div>
                     <input type="text" id="vmSearch" placeholder="Filter virtual workloads..." class="w-full sm:w-72 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 transition-all shadow-inner">
                 </div>
-                
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
                         <thead>
                             <tr class="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
-                                <th class="px-6 py-3.5">VM Name</th>
-                                <th class="px-6 py-3.5">State</th>
-                                <th class="px-6 py-3.5">Guest Operating System</th>
-                                <th class="px-6 py-3.5 text-center">Assigned vCPUs</th>
-                                <th class="px-6 py-3.5 text-right">Allocated RAM</th>
-                                <th class="px-6 py-3.5 text-right">95th % Peak CPU</th>
-                                <th class="px-6 py-3.5 text-right">95th % Peak RAM</th>
-                                <th class="px-6 py-3.5 text-right">Disk Consumed</th>
+                                <th class="px-6 py-3.5">VM Name</th><th class="px-6 py-3.5">State</th><th class="px-6 py-3.5">Guest OS</th><th class="px-6 py-3.5 text-center">vCPUs</th><th class="px-6 py-3.5 text-right">Allocated RAM</th><th class="px-6 py-3.5 text-right">95th % CPU</th><th class="px-6 py-3.5 text-right">95th % RAM</th><th class="px-6 py-3.5 text-right">Disk Consumed</th>
                             </tr>
                         </thead>
                         <tbody id="vmTableBody" class="divide-y divide-slate-800/50 text-slate-300"></tbody>
@@ -204,107 +213,204 @@
     </main>
 
     <script>
-        // Global references for File System Access API
         let rootDirectoryHandle = null;
         let activeProjectDirectoryHandle = null;
+        let currentLoadedFilesMap = {};
+        let scannedCustomerFoldersList = []; // Keeps master arrays of local folder directories
         
         let densityChart = null, dsChart = null, optChart = null;
         window.environmentCache = {};
 
-        // UI Binding Hooks
+        // Action UI Layout Binds
         document.getElementById('btnSelectWorkspace').addEventListener('click', initializeWorkspaceHandle);
-        document.getElementById('btnLoadOrCreateProject').addEventListener('click', initializeProjectWorkspace);
+        document.getElementById('btnOpenCustomer').addEventListener('click', openSelectedCustomerFolder);
+        document.getElementById('btnTriggerCreateMode').addEventListener('click', toggleCreateCustomerMode);
+        document.getElementById('btnCancelCreate').addEventListener('click', toggleCreateCustomerMode);
+        document.getElementById('btnCreateCustomer').addEventListener('click', createAndOpenNewCustomer);
+        document.getElementById('txtCustomerSearch').addEventListener('input', filterCustomerDropdown);
+        
         document.getElementById('excelFile').addEventListener('change', parseAuditWorkbook, false);
         document.getElementById('vmSearch').addEventListener('input', () => {
             if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
         });
 
-        // 1. Prompt User to choose Local Folder Workspace
+        // 1. Initialize Master Directory and Scan for Customers
         async function initializeWorkspaceHandle() {
             try {
-                rootDirectoryHandle = await window.showDirectoryPicker({
-                    mode: 'readwrite'
-                });
-                
+                rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
                 document.getElementById('workspaceIndicator').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40";
-                document.getElementById('workspacePath').innerText = `Active Workspace Folder Connected: [ ${rootDirectoryHandle.name} ]`;
+                document.getElementById('workspacePath').innerText = `Active Repository Path Connected: [ ${rootDirectoryHandle.name} ]`;
                 
-                // Expose Project Controls UI
-                document.getElementById('projectControls').classList.remove('hidden');
                 document.getElementById('btnSelectWorkspace').classList.add('hidden');
-
-                // Adjust text states
-                document.getElementById('welcomeHeader').innerText = "Awaiting Project Initialization";
-                document.getElementById('welcomeText').innerText = "Type a Customer or Project Name into the input text box above to load or create a project data workspace.";
-            } catch (err) {
-                console.error("Workspace access rejected:", err);
-                alert("File System Access API clearance is required to run multi-project workspaces.");
-            }
-        }
-
-        // 2. Initialize or retrieve Subfolder per customer inside parent root directory
-        async function initializeProjectWorkspace() {
-            const rawName = document.getElementById('txtProjectName').value.trim();
-            if(!rawName) { alert("Please provide a valid project identifier name."); return; }
-            
-            const cleanProjectName = rawName.replace(/[^a-z0-9_]/gi, '_'); // Sanitize name strings
-            
-            try {
-                // Request directory folder creation natively (Options: create true ensures it matches/spins up directory)
-                activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(cleanProjectName, { create: true });
+                document.getElementById('projectControls').classList.remove('hidden');
+                document.getElementById('projectControls').classList.add('flex');
                 
-                // Check if a pre-existing cached dataset state exists inside the directory catalog
-                try {
-                    const existingFileHandle = await activeProjectDirectoryHandle.getFileHandle('project_state.json');
-                    const file = await existingFileHandle.getFile();
-                    const jsonContent = await file.text();
-                    const stateObj = JSON.parse(jsonContent);
-                    
-                    // Hydrate UI State instantly from local file database cache
-                    window.environmentCache = stateObj.cache;
-                    document.getElementById('welcomeState').classList.add('hidden');
-                    document.getElementById('dashboardState').classList.remove('hidden');
-                    document.getElementById('uploadLabel').classList.remove('hidden');
+                await scanRepositoryForCustomers();
+            } catch (err) { alert("Permission required to index repository files."); }
+        }
 
-                    compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.snapWaste, stateObj.kpis.gpus);
-                    compileVisualCharts(stateObj.raw.clusters, stateObj.raw.datastores, window.environmentCache.vmRollup);
-                    renderSnapshotRiskRegister(stateObj.raw.snaps);
-                    renderPhysicalFleetRegister(stateObj.raw.hosts);
-                    renderWorkloadLedger(window.environmentCache.vmRollup);
-                    
-                    alert(`Loaded existing profile analysis found inside local directory path: /${cleanProjectName}/project_state.json`);
-                } catch(noStateErr) {
-                    // Fresh project layout
-                    document.getElementById('welcomeState').classList.remove('hidden');
-                    document.getElementById('dashboardState').classList.add('hidden');
-                    document.getElementById('uploadLabel').classList.remove('hidden');
-                    
-                    document.getElementById('welcomeHeader').innerText = `Project [ ${cleanProjectName} ] Active`;
-                    document.getElementById('welcomeText').innerText = "Workspace directory locked. Now choose a 21-tab audit workbook spreadsheet using the 'Parse & Save Spreadsheet' button at the top right. Results will auto-save to your folder directory.";
+        // 2. Scan Directory looking for pre-existing customer folders
+        async function scanRepositoryForCustomers() {
+            scannedCustomerFoldersList = [];
+            const selectEl = document.getElementById('selCustomer');
+            
+            // Clear prior listings out of dropdown except default layout index
+            selectEl.innerHTML = '<option value="">-- Select Existing Customer --</option>';
+
+            for await (const entry of rootDirectoryHandle.values()) {
+                if (entry.kind === 'directory') {
+                    scannedCustomerFoldersList.push(entry.name);
                 }
-            } catch(dirErr) {
-                console.error("Failed creating project handle:", dirErr);
-                alert("Could not initialize local file system subfolder profile.");
+            }
+
+            // Alphabetically sort listings for easy navigation
+            scannedCustomerFoldersList.sort().forEach(folderName => {
+                const opt = document.createElement('option');
+                opt.value = folderName;
+                opt.innerText = folderName.replace(/_/g, ' ');
+                selectEl.appendChild(opt);
+            });
+
+            document.getElementById('welcomeHeader').innerText = "Repository Index Synced";
+            document.getElementById('welcomeText').innerText = `Discovered ${scannedCustomerFoldersList.length} customer records inside your directory track. Choose one from the dropdown or click "+ New Customer".`;
+        }
+
+        // 3. Live search filter on dropdown selector
+        function filterCustomerDropdown() {
+            const query = document.getElementById('txtCustomerSearch').value.toLowerCase();
+            const selectEl = document.getElementById('selCustomer');
+            selectEl.innerHTML = '<option value="">-- Select Existing Customer --</option>';
+
+            scannedCustomerFoldersList.forEach(folderName => {
+                if (folderName.toLowerCase().includes(query)) {
+                    const opt = document.createElement('option');
+                    opt.value = folderName;
+                    opt.innerText = folderName.replace(/_/g, ' ');
+                    selectEl.appendChild(opt);
+                }
+            });
+        }
+
+        // 4. Toggle visibility between selector options vs creator paths
+        function toggleCreateCustomerMode() {
+            document.getElementById('projectControls').classList.toggle('hidden');
+            document.getElementById('projectControls').classList.toggle('flex');
+            document.getElementById('createControls').classList.toggle('hidden');
+            document.getElementById('createControls').classList.toggle('flex');
+            document.getElementById('txtNewCustomerName').value = '';
+        }
+
+        // 5. Action: Open an existing customer catalog space
+        async function openSelectedCustomerFolder() {
+            const selectedVal = document.getElementById('selCustomer').value;
+            if(!selectedVal) { alert("Please pick a customer directory target record first."); return; }
+
+            try {
+                activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(selectedVal, { create: false });
+                document.getElementById('uploadZone').classList.remove('hidden');
+                
+                // Clear inputs for neat fresh states
+                document.getElementById('txtLocationName').value = '';
+                await scanAndRenderFileChips();
+            } catch(err) { alert("Error opening the selected customer profile framework."); }
+        }
+
+        // 6. Action: Spin up fresh asset subfolder track explicitly
+        async function createAndOpenNewCustomer() {
+            const inputVal = document.getElementById('txtNewCustomerName').value.trim();
+            if(!inputVal) { alert("Please specify a fresh customer title identifier."); return; }
+            
+            const cleanFolder = inputVal.replace(/[^a-z0-9_]/gi, '_');
+
+            try {
+                // Instantiates native folder directory paths on disk structure
+                activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(cleanFolder, { create: true });
+                
+                // Refresh master repository array index track
+                await scanRepositoryForCustomers();
+                
+                // Reset UI layouts out of input toggles
+                toggleCreateCustomerMode();
+                document.getElementById('selCustomer').value = cleanFolder;
+                document.getElementById('uploadZone').classList.remove('hidden');
+                document.getElementById('txtLocationName').value = '';
+
+                await scanAndRenderFileChips();
+            } catch(err) { alert("Failed constructing a physical directory block inside repository lines."); }
+        }
+
+        async function scanAndRenderFileChips() {
+            currentLoadedFilesMap = {};
+            const chipContainer = document.getElementById('locationChipContainer');
+            chipContainer.innerHTML = '';
+            
+            for await (const entry of activeProjectDirectoryHandle.values()) {
+                if (entry.kind === 'file' && entry.name.endsWith('.json')) {
+                    const displayName = entry.name.replace('.json', '');
+                    currentLoadedFilesMap[displayName] = entry;
+                }
+            }
+
+            const keys = Object.keys(currentLoadedFilesMap).sort();
+            if(keys.length > 0) {
+                document.getElementById('locationSelectorZone').classList.remove('hidden');
+                document.getElementById('locationSelectorZone').classList.add('flex');
+                keys.forEach(fileKey => {
+                    const btn = document.createElement('button');
+                    btn.className = "px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-medium cursor-pointer transition-all";
+                    btn.innerText = fileKey;
+                    btn.onclick = () => loadCachedSiteFile(fileKey);
+                    chipContainer.appendChild(btn);
+                });
+                document.getElementById('welcomeHeader').innerText = `Customer Profile: [ ${activeProjectDirectoryHandle.name.replace(/_/g, ' ')} ]`;
+                document.getElementById('welcomeText').innerText = "Select an existing data collection file from the index chips above, or name and parse a new workbook asset.";
+            } else {
+                document.getElementById('locationSelectorZone').classList.remove('hidden');
+                document.getElementById('locationSelectorZone').classList.add('hidden');
+                document.getElementById('welcomeHeader').innerText = `Empty Space Connected: ${activeProjectDirectoryHandle.name}`;
+                document.getElementById('welcomeText').innerText = "No files tracked yet. Enter a destination filename code on the top toolbar and load a spreadsheet payload to map metrics.";
             }
         }
 
-        // 3. Save serialized configuration structures back down into local disk path
-        async function saveStateToLocalFolder(stateObj) {
-            if(!activeProjectDirectoryHandle) return;
+        async function loadCachedSiteFile(fileKey) {
             try {
-                const fileHandle = await activeProjectDirectoryHandle.getFileHandle('project_state.json', { create: true });
-                const writableStream = await fileHandle.createWritable();
-                await writableStream.write(JSON.stringify(stateObj, null, 2));
-                await writableStream.close();
-                console.log("Auto-saved assessment mapping down onto directory path structural tree layer.");
-            } catch (err) {
-                console.error("Could not execute local state save routine:", err);
-            }
+                const handle = currentLoadedFilesMap[fileKey];
+                const file = await handle.getFile();
+                const text = await file.text();
+                const stateObj = JSON.parse(text);
+
+                window.environmentCache = stateObj.cache;
+                document.getElementById('welcomeState').classList.add('hidden');
+                document.getElementById('dashboardState').classList.remove('hidden');
+
+                compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.snapWaste, stateObj.kpis.gpus);
+                compileVisualCharts(stateObj.raw.clusters, stateObj.raw.datastores, window.environmentCache.vmRollup);
+                renderSnapshotRiskRegister(stateObj.raw.snaps);
+                renderPhysicalFleetRegister(stateObj.raw.hosts);
+                renderWorkloadLedger(window.environmentCache.vmRollup);
+                
+                document.getElementById('txtLocationName').value = fileKey;
+            } catch(err) { alert("Error during cached file restoration procedures."); }
         }
 
         function parseAuditWorkbook(e) {
             const file = e.target.files[0];
             if (!file) return;
+
+            let targetName = document.getElementById('txtLocationName').value.trim();
+            if(!targetName) {
+                targetName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9_]/gi, '_');
+            } else {
+                targetName = targetName.replace(/[^a-z0-9_]/gi, '_');
+            }
+
+            if (currentLoadedFilesMap[targetName]) {
+                const choice = confirm(`A record named "${targetName}" already exists in this customer folder.\n\nClick OK to automatically add a timestamp suffix and save as a new version.\nClick Cancel to overwrite the existing file.`);
+                if (choice) {
+                    const stamp = new Date().toISOString().split('T')[0];
+                    targetName = `${targetName}_${stamp}`;
+                }
+            }
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -317,12 +423,12 @@
                     parsedSheets[normalizedKey] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                 });
 
-                processVcenterTopology(parsedSheets);
+                processAndSaveVcenterSite(parsedSheets, targetName);
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function processVcenterTopology(sheets) {
+        function processAndSaveVcenterSite(sheets, saveFileName) {
             const dcList = sheets['vdatacenter'] || [];
             const clusterList = sheets['vcluster'] || [];
             const hostList = sheets['vhost'] || sheets['vhosts'] || [];
@@ -358,24 +464,36 @@
 
             window.environmentCache.vmRollup = optimizedVmList;
 
-            // Trigger State Visual Shift
             document.getElementById('welcomeState').classList.add('hidden');
             document.getElementById('dashboardState').classList.remove('hidden');
 
-            // Render Views
             compileKpiPanels(dcList.length, clusterList.length, hostList.length, optimizedVmList, totalSnapWasteMiB, totalGPUs);
             compileVisualCharts(clusterList, dsList, optimizedVmList);
             renderSnapshotRiskRegister(snapList);
             renderPhysicalFleetRegister(hostList);
-            renderWorkloadLedger(optimizedVmList);
+            renderWorkloadLedger(window.environmentCache.vmRollup);
 
-            // package layout metrics payload state matrix to back down into workspace folder disk files
-            const fullProjectState = {
+            const siteStatePayload = {
                 kpis: { dc: dcList.length, clusters: clusterList.length, hosts: hostList.length, snapWaste: totalSnapWasteMiB, gpus: totalGPUs },
                 cache: { vmRollup: optimizedVmList },
                 raw: { clusters: clusterList, datastores: dsList, snaps: snapList, hosts: hostList }
             };
-            saveStateToLocalFolder(fullProjectState);
+
+            writeSiteFileToDisk(saveFileName, siteStatePayload);
+        }
+
+        async function writeSiteFileToDisk(saveFileName, payload) {
+            if(!activeProjectDirectoryHandle) return;
+            try {
+                const finalName = `${saveFileName}.json`;
+                const fileHandle = await activeProjectDirectoryHandle.getFileHandle(finalName, { create: true });
+                const writableStream = await fileHandle.createWritable();
+                await writableStream.write(JSON.stringify(payload, null, 2));
+                await writableStream.close();
+                
+                await scanAndRenderFileChips();
+                alert(`Successfully saved collection record: /${activeProjectDirectoryHandle.name}/${finalName}`);
+            } catch (err) { alert("Failed auto-committing baseline configuration records."); }
         }
 
         function compileKpiPanels(dc, clusters, hosts, vms, snapWaste, gpus) {
@@ -384,7 +502,6 @@
             document.getElementById('kpiHosts').innerText = hosts;
             document.getElementById('kpiVMs').innerText = vms.length;
             document.getElementById('kpiGPUs').innerText = gpus;
-            
             const wasteGB = snapWaste / 1024;
             document.getElementById('kpiSnapWaste').innerText = wasteGB > 1024 ? `${(wasteGB / 1024).toFixed(2)} TB` : `${wasteGB.toFixed(1)} GB`;
         }
@@ -408,7 +525,7 @@
             dsChart = new Chart(ctxDs, {
                 type: 'doughnut',
                 data: {
-                    labels: dsSample.map(d => d['Datastore Name'] || 'Storage Volume'),
+                    labels: dsSample.map(d => d['Datastore Name'] || 'Volume'),
                     datasets: [{ data: dsSample.map(d => parseFloat(d['Capacity (MiB)'] || 0) / 1024 / 1024), backgroundColor: ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } } }
