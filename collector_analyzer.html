@@ -49,17 +49,14 @@
             </div>
 
             <div class="flex items-center gap-4 w-full lg:w-auto justify-end">
-                <!-- Initial Setup Buttons (Controlled dynamically via IndexedDB states) -->
                 <button id="btnSelectWorkspace" class="hidden w-full lg:w-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/15">
                     Set Local Repository Path
                 </button>
                 
-                <!-- Remembered Restore Button Layout -->
                 <button id="btnRestoreWorkspace" class="hidden w-full lg:w-auto px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-emerald-600/15 animate-pulse">
                     ⚡ Reconnect Local Repository
                 </button>
 
-                <!-- Advanced Customer Selection Interface -->
                 <div id="projectControls" class="hidden flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
                     <div class="relative flex-1 sm:w-64">
                         <select id="selCustomer" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer">
@@ -101,7 +98,7 @@
 
         <!-- Available Collector Sub-Files Index Bar -->
         <div id="locationSelectorZone" class="hidden bg-slate-900/30 border border-slate-800/60 px-4 py-3 rounded-xl mb-6 items-center gap-4 overflow-x-auto">
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Available Project Records:</span>
+            <span id="lblCustomerClusters" class="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Customer Clusters:</span>
             <div id="locationChipContainer" class="flex items-center gap-2"></div>
         </div>
 
@@ -122,21 +119,23 @@
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Clusters</p><p id="kpiClusters" class="text-2xl font-black mt-1 text-purple-400">-</p></div>
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">ESXi Hosts</p><p id="kpiHosts" class="text-2xl font-black mt-1 text-cyan-400">-</p></div>
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total Configured VMs</p><p id="kpiVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
-                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Snapshot Waste</p><p id="kpiSnapWaste" class="text-2xl font-black mt-1 text-rose-400">-</p></div>
+                <!-- Swapped out Snapshot waste widget for count of Active Running instances -->
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Powered On VMs</p><p id="kpiActiveVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active NVIDIA GPUs</p><p id="kpiGPUs" class="text-2xl font-black mt-1 text-amber-400">-</p></div>
             </div>
 
-            <!-- Charts and Tables -->
+            <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Cluster Host Workload Densities</h3><div class="relative flex-1 min-h-0"><canvas id="clusterDensityChart"></canvas></div></div>
                 <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Datastore Capacity Profiles (TB)</h3><div class="relative flex-1 min-h-0"><canvas id="datastoreChart"></canvas></div></div>
                 <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">VM Resource Optimization Analysis</h3><div class="relative flex-1 min-h-0"><canvas id="vmOptimizationChart"></canvas></div></div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4">
+            <!-- Optimized Grid Block: Snapshot Footprint Alongside Extended Host Fleet Inventory Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4 lg:col-span-1">
                     <div><h3 class="text-sm font-bold text-slate-200">Active Storage Risks: Snapshot Footprint</h3><p class="text-xs text-slate-400">Orphaned checkpoints consuming block storage layers</p></div>
-                    <div class="overflow-y-auto max-h-[250px] border border-slate-800/60 rounded-lg">
+                    <div class="overflow-y-auto max-h-[300px] border border-slate-800/60 rounded-lg">
                         <table class="w-full text-left text-xs border-collapse">
                             <thead><tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800"><th class="p-2.5">VM Name</th><th class="p-2.5">Snapshot Label</th><th class="p-2.5 text-right">Size (MiB)</th></tr></thead>
                             <tbody id="snapshotTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
@@ -144,11 +143,20 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4">
-                    <div><h3 class="text-sm font-bold text-slate-200">Physical Compute Node Fleet Inventory</h3><p class="text-xs text-slate-400">Underlying compute topology and cores</p></div>
-                    <div class="overflow-y-auto max-h-[250px] border border-slate-800/60 rounded-lg">
+                <!-- Refined Node Fleet table grid layout stretching with custom specific properties -->
+                <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4 lg:col-span-2">
+                    <div><h3 class="text-sm font-bold text-slate-200">Physical Compute Node Fleet Inventory</h3><p class="text-xs text-slate-400">Underlying hardware topology specifications and active memory mappings</p></div>
+                    <div class="overflow-y-auto max-h-[300px] border border-slate-800/60 rounded-lg">
                         <table class="w-full text-left text-xs border-collapse">
-                            <thead><tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800"><th class="p-2.5">Host Name</th><th class="p-2.5">Hardware Model</th><th class="p-2.5 text-center">Cores / CPUs</th><th class="p-2.5 text-right">RAM Size</th><th class="p-2.5 text-right">NVIDIA GPUs</th></tr></thead>
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                                    <th class="p-2.5">Hostname</th>
+                                    <th class="p-2.5">HW Model</th>
+                                    <th class="p-2.5">CPU Model</th>
+                                    <th class="p-2.5 text-center">CPU GHz</th>
+                                    <th class="p-2.5 text-right">Memory</th>
+                                </tr>
+                            </thead>
                             <tbody id="hostTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
                         </table>
                     </div>
@@ -199,16 +207,12 @@
             if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
         });
 
-        // Run checking algorithm right at bootup initialization loop
         window.addEventListener('DOMContentLoaded', checkIndexedDbForSavedWorkspace);
 
-        // NATIVE STORAGE ARCHITECTURE: IndexedDB Wrapper Routines
         function getDbInstance() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open("vAnalystWorkspaceDB", 1);
-                request.onupgradeneeded = (e) => {
-                    e.target.result.createObjectStore("handles");
-                };
+                request.onupgradeneeded = (e) => { e.target.result.createObjectStore("handles"); };
                 request.onsuccess = (e) => resolve(e.target.result);
                 request.onerror = (e) => reject(e.target.error);
             });
@@ -218,44 +222,35 @@
             try {
                 const db = await getDbInstance();
                 const tx = db.transaction("handles", "readonly");
-                const store = tx.objectStore("handles");
                 const savedHandle = await new Promise((res) => {
-                    const req = store.get("rootFolder");
+                    const req = tx.objectStore("handles").get("rootFolder");
                     req.onsuccess = () => res(req.result);
                 });
 
                 if (savedHandle) {
-                    // Remembered token discovery configuration
                     document.getElementById('workspacePath').innerText = `Discovered prior workspace token mapping: [ ${savedHandle.name} ]`;
                     document.getElementById('btnRestoreWorkspace').innerText = `⚡ Reconnect Local Repository [ ${savedHandle.name} ]`;
                     document.getElementById('btnRestoreWorkspace').classList.remove('hidden');
-                    document.getElementById('btnSelectWorkspace').classList.remove('hidden'); // Offer switch alternate fallback option
+                    document.getElementById('btnSelectWorkspace').classList.remove('hidden');
                 } else {
-                    // Brand clean load layout configuration
                     document.getElementById('workspacePath').innerText = "No root workspace repository connected yet.";
                     document.getElementById('btnSelectWorkspace').classList.remove('hidden');
                 }
             } catch (err) {
-                console.error("IndexedDB initialization fault:", err);
                 document.getElementById('btnSelectWorkspace').classList.remove('hidden');
             }
         }
 
-        // Action: User manually picks folder structure map path target
         async function selectNewWorkspaceHandle() {
             try {
                 rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-                
-                // Persist token footprint down into browser database
                 const db = await getDbInstance();
                 const tx = db.transaction("handles", "readwrite");
                 tx.objectStore("handles").put(rootDirectoryHandle, "rootFolder");
-                
                 await handleWorkspaceActivationSuccess();
             } catch (err) { alert("Permission required to index repository files."); }
         }
 
-        // Action: User taps the reconnection validation shortcut panel
         async function restoreSavedWorkspaceHandle() {
             try {
                 const db = await getDbInstance();
@@ -265,19 +260,15 @@
                     req.onsuccess = () => res(req.result);
                 });
 
-                // Prompts explicit security context review loop check sequence natively
                 const options = { mode: 'readwrite' };
                 if ((await savedHandle.queryPermission(options)) === 'granted' || 
                     (await savedHandle.requestPermission(options)) === 'granted') {
-                    
                     rootDirectoryHandle = savedHandle;
                     await handleWorkspaceActivationSuccess();
                 } else {
                     alert("Directory access verification declined by security layer.");
                 }
             } catch(err) {
-                console.error(err);
-                alert("Failed restoring historical security folder tracks smoothly. Try setting a fresh pathway.");
                 document.getElementById('btnSelectWorkspace').classList.remove('hidden');
             }
         }
@@ -285,13 +276,10 @@
         async function handleWorkspaceActivationSuccess() {
             document.getElementById('workspaceIndicator').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40";
             document.getElementById('workspacePath').innerText = `Active Repository Path Connected: [ ${rootDirectoryHandle.name} ]`;
-            
             document.getElementById('btnSelectWorkspace').classList.add('hidden');
             document.getElementById('btnRestoreWorkspace').classList.add('hidden');
-            
             document.getElementById('projectControls').classList.remove('hidden');
             document.getElementById('projectControls').classList.add('flex');
-            
             await scanRepositoryForCustomers();
         }
 
@@ -301,9 +289,7 @@
             selectEl.innerHTML = '<option value="">-- Select Existing Customer --</option>';
 
             for await (const entry of rootDirectoryHandle.values()) {
-                if (entry.kind === 'directory') {
-                    scannedCustomerFoldersList.push(entry.name);
-                }
+                if (entry.kind === 'directory') scannedCustomerFoldersList.push(entry.name);
             }
 
             scannedCustomerFoldersList.sort().forEach(folderName => {
@@ -314,7 +300,7 @@
             });
 
             document.getElementById('welcomeHeader').innerText = "Repository Index Synced";
-            document.getElementById('welcomeText').innerText = `Discovered ${scannedCustomerFoldersList.length} customer records inside your directory track. Choose one from the dropdown or click "+ New Customer".`;
+            document.getElementById('welcomeText').innerText = `Choose a customer record from the dropdown or click "+ New Customer".`;
         }
 
         function filterCustomerDropdown() {
@@ -342,21 +328,25 @@
 
         async function openSelectedCustomerFolder() {
             const selectedVal = document.getElementById('selCustomer').value;
-            if(!selectedVal) { alert("Please pick a customer directory target record first."); return; }
+            if(!selectedVal) { alert("Please pick a customer folder first."); return; }
 
             try {
                 activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(selectedVal, { create: false });
                 document.getElementById('uploadZone').classList.remove('hidden');
                 document.getElementById('txtLocationName').value = '';
+                
+                // Requirement 1: Change label title to pull the dynamic name text dynamically
+                const formattedName = selectedVal.replace(/_/g, ' ');
+                document.getElementById('lblCustomerClusters').innerText = `${formattedName} Clusters:`;
+                
                 await scanAndRenderFileChips();
-            } catch(err) { alert("Error opening the selected customer profile framework."); }
+            } catch(err) { alert("Error opening the customer workspace environment."); }
         }
 
         async function removeSelectedCustomerFolder() {
             const selectedVal = document.getElementById('selCustomer').value;
-            if(!selectedVal) { alert("Please pick a customer folder from the list to delete."); return; }
-
-            const confirmFirst = confirm(`⚠️ DANGER ZONE ⚠️\n\nAre you absolutely sure you want to delete the folder "${selectedVal.replace(/_/g, ' ')}" from your Mac?\n\nThis will permanently delete ALL site files and performance assessments inside it. This cannot be undone.`);
+            if(!selectedVal) return;
+            const confirmFirst = confirm(`Are you sure you want to delete "${selectedVal.replace(/_/g, ' ')}"?`);
             if(!confirmFirst) return;
 
             try {
@@ -367,13 +357,12 @@
                 document.getElementById('dashboardState').classList.add('hidden');
                 document.getElementById('welcomeState').classList.remove('hidden');
                 await scanRepositoryForCustomers();
-                alert(`Successfully deleted customer profile from directory repository.`);
-            } catch (err) { alert("Could not remove the local directory target layer."); }
+            } catch (err) { alert("Could not remove folder target."); }
         }
 
         async function createAndOpenNewCustomer() {
             const inputVal = document.getElementById('txtNewCustomerName').value.trim();
-            if(!inputVal) { alert("Please specify a fresh customer title identifier."); return; }
+            if(!inputVal) return;
             const cleanFolder = inputVal.replace(/[^a-z0-9_]/gi, '_');
 
             try {
@@ -383,8 +372,9 @@
                 document.getElementById('selCustomer').value = cleanFolder;
                 document.getElementById('uploadZone').classList.remove('hidden');
                 document.getElementById('txtLocationName').value = '';
+                document.getElementById('lblCustomerClusters').innerText = `${inputVal} Clusters:`;
                 await scanAndRenderFileChips();
-            } catch(err) { alert("Failed constructing a physical directory block inside repository lines."); }
+            } catch(err) { alert("Failed constructing directory mapping."); }
         }
 
         async function scanAndRenderFileChips() {
@@ -421,18 +411,17 @@
                     chipGroup.appendChild(deleteBtn);
                     chipContainer.appendChild(chipGroup);
                 });
-                document.getElementById('welcomeHeader').innerText = `Customer Profile: [ ${activeProjectDirectoryHandle.name.replace(/_/g, ' ')} ]`;
-                document.getElementById('welcomeText').innerText = "Select an existing data collection file from the index chips above, or name and parse a new workbook asset.";
+                document.getElementById('welcomeState').classList.add('hidden');
             } else {
                 document.getElementById('locationSelectorZone').classList.remove('hidden');
                 document.getElementById('locationSelectorZone').classList.add('hidden');
-                document.getElementById('welcomeHeader').innerText = `Empty Space Connected: ${activeProjectDirectoryHandle.name}`;
-                document.getElementById('welcomeText').innerText = "No files tracked yet. Enter a destination filename code on the top toolbar and load a spreadsheet payload to map metrics.";
+                document.getElementById('welcomeState').classList.remove('hidden');
+                document.getElementById('dashboardState').classList.add('hidden');
             }
         }
 
         async function removeSpecificSiteFile(fileKey) {
-            const confirmFileDel = confirm(`Are you sure you want to delete the specific data snapshot "${fileKey}"?\n\nThis file will be completely removed from your customer repository catalog.`);
+            const confirmFileDel = confirm(`Delete specific data snapshot "${fileKey}"?`);
             if(!confirmFileDel) return;
 
             try {
@@ -440,9 +429,8 @@
                 await activeProjectDirectoryHandle.removeEntry(storageFileName);
                 document.getElementById('dashboardState').classList.add('hidden');
                 document.getElementById('welcomeState').classList.remove('hidden');
-                document.getElementById('txtLocationName').value = '';
                 await scanAndRenderFileChips();
-            } catch(err) { alert("Failed deleting file record instance."); }
+            } catch(err) { alert("Failed deleting record."); }
         }
 
         async function loadCachedSiteFile(fileKey) {
@@ -456,7 +444,7 @@
                 document.getElementById('welcomeState').classList.add('hidden');
                 document.getElementById('dashboardState').classList.remove('hidden');
 
-                compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.snapWaste, stateObj.kpis.gpus);
+                compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.gpus);
                 compileVisualCharts(stateObj.raw.clusters, stateObj.raw.datastores, window.environmentCache.vmRollup);
                 renderSnapshotRiskRegister(stateObj.raw.snaps);
                 renderPhysicalFleetRegister(stateObj.raw.hosts);
@@ -472,7 +460,7 @@
 
             let targetName = document.getElementById('txtLocationName').value.trim();
             if(!targetName) {
-                const promptName = prompt(`Please provide a readable name for this specific infrastructure upload asset:\n(e.g., Stadium Cluster, Southside DC, Q3 Refresh)`, "Stadium Cluster");
+                const promptName = prompt(`Please provide a readable name for this specific infrastructure upload asset:`, "Stadium Cluster");
                 if (promptName && promptName.trim()) targetName = promptName.trim();
                 else targetName = file.name.replace(/\.[^/.]+$/, "");
             }
@@ -481,25 +469,24 @@
             const cleanStorageFileKey = cleanDisplayKey.replace(/ /g, '_');
 
             if (currentLoadedFilesMap[cleanDisplayKey]) {
-                const choice = confirm(`A record named "${cleanDisplayKey}" already exists in this customer folder.\n\nClick OK to automatically add a timestamp suffix and save as a new version.\nClick Cancel to overwrite the existing file.`);
+                const choice = confirm(`A record named "${cleanDisplayKey}" already exists. Save as a new version?`);
                 if (choice) {
                     const stamp = new Date().toISOString().split('T')[0];
-                    processFilePayload(file, `${cleanStorageFileKey}_${stamp}`, `${cleanDisplayKey} (${stamp})`);
+                    processFilePayload(file, `${cleanStorageFileKey}_${stamp}`);
                     return;
                 }
             }
-            processFilePayload(file, cleanStorageFileKey, cleanDisplayKey);
+            processFilePayload(file, cleanStorageFileKey);
         }
 
-        function processFilePayload(file, storageKey, displayKey) {
+        function processFilePayload(file, storageKey) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 const parsedSheets = {};
                 workbook.SheetNames.forEach(sheetName => {
-                    const normalizedKey = sheetName.trim().toLowerCase();
-                    parsedSheets[normalizedKey] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    parsedSheets[sheetName.trim().toLowerCase()] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                 });
                 processAndSaveVcenterSite(parsedSheets, storageKey);
             };
@@ -515,9 +502,6 @@
             const vcpuList = sheets['vcpu'] || [];
             const vmemList = sheets['vmemory'] || [];
             const snapList = sheets['vsnapshot'] || [];
-
-            let totalSnapWasteMiB = 0;
-            snapList.forEach(s => { totalSnapWasteMiB += parseFloat(s['Size MiB (total)'] || s['Size MiB (vmsn)'] || 0); });
 
             let totalGPUs = 0;
             hostList.forEach(h => { totalGPUs += parseInt(h['GPU Count'] || 0); });
@@ -545,14 +529,14 @@
             document.getElementById('welcomeState').classList.add('hidden');
             document.getElementById('dashboardState').classList.remove('hidden');
 
-            compileKpiPanels(dcList.length, clusterList.length, hostList.length, optimizedVmList, totalSnapWasteMiB, totalGPUs);
+            compileKpiPanels(dcList.length, clusterList.length, hostList.length, optimizedVmList, totalGPUs);
             compileVisualCharts(clusterList, dsList, optimizedVmList);
             renderSnapshotRiskRegister(snapList);
             renderPhysicalFleetRegister(hostList);
-            renderWorkloadLedger(window.environmentCache.vmRollup);
+            renderWorkloadLedger(optimizedVmList);
 
             const siteStatePayload = {
-                kpis: { dc: dcList.length, clusters: clusterList.length, hosts: hostList.length, snapWaste: totalSnapWasteMiB, gpus: totalGPUs },
+                kpis: { dc: dcList.length, clusters: clusterList.length, hosts: hostList.length, gpus: totalGPUs },
                 cache: { vmRollup: optimizedVmList },
                 raw: { clusters: clusterList, datastores: dsList, snaps: snapList, hosts: hostList }
             };
@@ -560,29 +544,16 @@
             writeSiteFileToDisk(saveFileName, siteStatePayload);
         }
 
-        async function writeSiteFileToDisk(saveFileName, payload) {
-            if(!activeProjectDirectoryHandle) return;
-            try {
-                const finalName = `${saveFileName}.json`;
-                const fileHandle = await activeProjectDirectoryHandle.getFileHandle(finalName, { create: true });
-                const writableStream = await fileHandle.createWritable();
-                await writableStream.write(JSON.stringify(payload, null, 2));
-                await writableStream.close();
-                
-                await scanAndRenderFileChips();
-                document.getElementById('txtLocationName').value = saveFileName.replace(/_/g, ' ');
-                alert(`Successfully saved collection record: /${activeProjectDirectoryHandle.name}/${finalName}`);
-            } catch (err) { alert("Failed auto-committing records."); }
-        }
-
-        function compileKpiPanels(dc, clusters, hosts, vms, snapWaste, gpus) {
+        function compileKpiPanels(dc, clusters, hosts, vms, gpus) {
             document.getElementById('kpiDC').innerText = dc;
             document.getElementById('kpiClusters').innerText = clusters;
             document.getElementById('kpiHosts').innerText = hosts;
             document.getElementById('kpiVMs').innerText = vms.length;
             document.getElementById('kpiGPUs').innerText = gpus;
-            const wasteGB = snapWaste / 1024;
-            document.getElementById('kpiSnapWaste').innerText = wasteGB > 1024 ? `${(wasteGB / 1024).toFixed(2)} TB` : `${wasteGB.toFixed(1)} GB`;
+            
+            // Requirement 2: Calculate explicit Powered On running metrics dynamically
+            const activeCount = vms.filter(v => v.state.toLowerCase().includes('on')).length;
+            document.getElementById('kpiActiveVMs').innerText = activeCount;
         }
 
         function compileVisualCharts(clusters, datastores, vms) {
@@ -639,14 +610,33 @@
             });
         }
 
+        // Requirement 3: Render Extended Physical Fleet Table properties mapped out of standard sheet object keys
         function renderPhysicalFleetRegister(hosts) {
             const tbody = document.getElementById('hostTableBody'); tbody.innerHTML = '';
+            if(hosts.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 italic">No physical compute nodes found.</td></tr>`; return; }
+            
             hosts.slice(0, 20).forEach(h => {
-                const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors';
-                const cores = h['CPU Cores'] || h['Cores'] || '-'; const cpuCount = h['CPUs'] || '-';
-                const ramRaw = parseFloat(h['Memory Size'] || 0); const ramString = ramRaw > 1024 ? `${(ramRaw / 1024).toFixed(0)} GB` : `${ramRaw} MB`;
-                const gpuCount = parseInt(h['GPU Count'] || 0);
-                tr.innerHTML = `<td class="p-2.5 font-medium text-slate-300">${h['Host Name'] || h['Host IP'] || 'Node'}</td><td class="p-2.5 text-slate-400">${h['Model'] || 'Platform'}</td><td class="p-2.5 text-center text-slate-400">${cores} c / ${cpuCount} p</td><td class="p-2.5 text-right font-mono text-cyan-400">${ramString}</td><td class="p-2.5 text-right font-semibold ${gpuCount > 0 ? 'text-amber-400' : 'text-slate-600'}">${gpuCount}</td>`;
+                const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors text-[11px]';
+                
+                const hostName = h['Host Name'] || h['Host IP'] || h['Host'] || 'Unknown Host';
+                const hwModel = h['Model'] || h['Hardware Model'] || '-';
+                const cpuModel = h['CPU Model'] || h['Processor Type'] || h['Processor Model'] || '-';
+                
+                // Parse out CPU GHz fields
+                const cpuSpeedRaw = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || 0);
+                const cpuSpeedStr = cpuSpeedRaw > 0 ? `${cpuSpeedRaw.toFixed(2)} GHz` : '-';
+                
+                // Standardize RAM scaling parsing structures 
+                const ramRaw = parseFloat(h['Memory Size'] || h['Memory Size (MiB)'] || h['RAM'] || 0);
+                const ramString = ramRaw > 1024 ? `${(ramRaw / 1024).toFixed(0)} GB` : ramRaw > 0 ? `${ramRaw} MB` : '-';
+                
+                tr.innerHTML = `
+                    <td class="p-2.5 font-medium text-slate-200 max-w-[140px] truncate">${hostName}</td>
+                    <td class="p-2.5 text-slate-400 truncate max-w-[120px]">${hwModel}</td>
+                    <td class="p-2.5 text-slate-400 truncate max-w-[160px]">${cpuModel}</td>
+                    <td class="p-2.5 text-center font-mono text-amber-400/90">${cpuSpeedStr}</td>
+                    <td class="p-2.5 text-right font-mono text-cyan-400">${ramString}</td>
+                `;
                 tbody.appendChild(tr);
             });
         }
