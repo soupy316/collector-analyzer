@@ -24,9 +24,9 @@
                 </div>
             </div>
             
-            <!-- File Input Upload (Active when a project folder is initialized) -->
+            <!-- File Input Upload -->
             <div id="uploadZone" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <input type="text" id="txtLocationName" placeholder="Saved Name (e.g., Stadium Cluster, Southside)..." class="px-3 py-2 bg-slate-900 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-medium w-full sm:w-80" title="Give this specific spreadsheet upload a meaningful location or cluster nickname">
+                <input type="text" id="txtLocationName" placeholder="Saved Name (e.g., Stadium Cluster, Southside)..." class="px-3 py-2 bg-slate-900 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-medium w-full sm:w-80">
                 <label class="flex items-center justify-center gap-2.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl cursor-pointer transition-all text-sm font-medium shadow-lg shadow-indigo-600/10 group whitespace-nowrap">
                     <svg class="w-4 h-4 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span class="text-white">Process & Add Spreadsheet</span>
@@ -49,15 +49,12 @@
             </div>
 
             <div class="flex items-center gap-4 w-full lg:w-auto justify-end">
-                <!-- Step 1: Initial Connection -->
                 <button id="btnSelectWorkspace" class="w-full lg:w-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/15">
                     Set Local Repository Path
                 </button>
 
-                <!-- Step 2: Advanced Customer Selection Interface -->
                 <div id="projectControls" class="hidden flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-                    <!-- Searchable Customer Dropdown Selection Layout -->
-                    <div class="relative flex-1 sm:w-72">
+                    <div class="relative flex-1 sm:w-64">
                         <select id="selCustomer" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer">
                             <option value="">-- Select Existing Customer --</option>
                         </select>
@@ -66,26 +63,27 @@
                         </div>
                     </div>
 
-                    <!-- Filter search box -->
-                    <input type="text" id="txtCustomerSearch" placeholder="🔍 Quick search list..." class="px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 placeholder-slate-600 focus:outline-none w-full sm:w-36" title="Filter the dropdown customer inventory list">
+                    <input type="text" id="txtCustomerSearch" placeholder="🔍 Search..." class="px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 placeholder-slate-600 focus:outline-none w-full sm:w-28">
 
-                    <!-- Actions -->
-                    <button id="btnOpenCustomer" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer whitespace-nowrap">
-                        Open Customer Folder
+                    <button id="btnOpenCustomer" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer">
+                        Open
+                    </button>
+                    
+                    <!-- Destructive Customer Removal Tool -->
+                    <button id="btnDeleteCustomer" class="px-3 py-2 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-900/50 text-rose-400 text-xs font-medium rounded-xl transition-all cursor-pointer" title="Permanently delete this customer folder and all its loaded files from your Mac drive">
+                        Delete Folder
                     </button>
 
                     <div class="h-6 w-px bg-slate-800 hidden sm:block"></div>
 
-                    <!-- Trigger New Customer Layout creation -->
-                    <button id="btnTriggerCreateMode" class="px-3 py-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 font-medium text-xs rounded-xl transition-all cursor-pointer whitespace-nowrap">
+                    <button id="btnTriggerCreateMode" class="px-3 py-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 font-medium text-xs rounded-xl transition-all cursor-pointer">
                         + New Customer
                     </button>
                 </div>
 
-                <!-- Step 2b: Inline Dynamic Creator Interface -->
                 <div id="createControls" class="hidden items-center gap-3 w-full lg:w-auto transition-all">
                     <input type="text" id="txtNewCustomerName" placeholder="Enter New Customer Name..." class="px-3 py-2 bg-slate-950 border border-indigo-500/40 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-semibold w-full sm:w-64">
-                    <button id="btnCreateCustomer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer whitespace-nowrap">
+                    <button id="btnCreateCustomer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer">
                         Create Folder
                     </button>
                     <button id="btnCancelCreate" class="text-xs text-slate-400 hover:text-slate-200 px-2 py-1 font-medium cursor-pointer">
@@ -101,7 +99,7 @@
             <div id="locationChipContainer" class="flex items-center gap-2"></div>
         </div>
 
-        <!-- Welcome Screen (Pre-upload Empty State) -->
+        <!-- Welcome Screen -->
         <div id="welcomeState" class="flex flex-col items-center justify-center border border-slate-800 bg-slate-900/10 rounded-2xl py-24 px-6 text-center my-8 shadow-xl max-w-2xl mx-auto">
             <div class="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-5 shadow-inner">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2zm5-2V3a1 1 0 011-1h6a1 1 0 011 1v2M5 7h14"/></svg>
@@ -114,74 +112,37 @@
         <div id="dashboardState" class="hidden space-y-6">
             <!-- Global Inventory Rollup KPIs -->
             <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
-                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm">
-                    <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Datacenters</p>
-                    <p id="kpiDC" class="text-2xl font-black mt-1 text-indigo-400">-</p>
-                </div>
-                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm">
-                    <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Clusters</p>
-                    <p id="kpiClusters" class="text-2xl font-black mt-1 text-purple-400">-</p>
-                </div>
-                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm">
-                    <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">ESXi Hosts</p>
-                    <p id="kpiHosts" class="text-2xl font-black mt-1 text-cyan-400">-</p>
-                </div>
-                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm">
-                    <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total Configured VMs</p>
-                    <p id="kpiVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p>
-                </div>
-                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm">
-                    <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Snapshot Waste</p>
-                    <p id="kpiSnapWaste" class="text-2xl font-black mt-1 text-rose-400">-</p>
-                </div>
-                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm">
-                    <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active NVIDIA GPUs</p>
-                    <p id="kpiGPUs" class="text-2xl font-black mt-1 text-amber-400">-</p>
-                </div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Datacenters</p><p id="kpiDC" class="text-2xl font-black mt-1 text-indigo-400">-</p></div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Clusters</p><p id="kpiClusters" class="text-2xl font-black mt-1 text-purple-400">-</p></div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">ESXi Hosts</p><p id="kpiHosts" class="text-2xl font-black mt-1 text-cyan-400">-</p></div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total Configured VMs</p><p id="kpiVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Snapshot Waste</p><p id="kpiSnapWaste" class="text-2xl font-black mt-1 text-rose-400">-</p></div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active NVIDIA GPUs</p><p id="kpiGPUs" class="text-2xl font-black mt-1 text-amber-400">-</p></div>
             </div>
 
             <!-- Charts and Tables -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Cluster Host Workload Densities</h3>
-                    <div class="relative flex-1 min-h-0"><canvas id="clusterDensityChart"></canvas></div>
-                </div>
-                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Datastore Capacity Profiles (TB)</h3>
-                    <div class="relative flex-1 min-h-0"><canvas id="datastoreChart"></canvas></div>
-                </div>
-                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]">
-                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">VM Resource Optimization Analysis</h3>
-                    <div class="relative flex-1 min-h-0"><canvas id="vmOptimizationChart"></canvas></div>
-                </div>
+                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Cluster Host Workload Densities</h3><div class="relative flex-1 min-h-0"><canvas id="clusterDensityChart"></canvas></div></div>
+                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Datastore Capacity Profiles (TB)</h3><div class="relative flex-1 min-h-0"><canvas id="datastoreChart"></canvas></div></div>
+                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">VM Resource Optimization Analysis</h3><div class="relative flex-1 min-h-0"><canvas id="vmOptimizationChart"></canvas></div></div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-200">Active Storage Risks: Snapshot Footprint</h3>
-                        <p class="text-xs text-slate-400">Orphaned checkpoints consuming block storage layers</p>
-                    </div>
+                    <div><h3 class="text-sm font-bold text-slate-200">Active Storage Risks: Snapshot Footprint</h3><p class="text-xs text-slate-400">Orphaned checkpoints consuming block storage layers</p></div>
                     <div class="overflow-y-auto max-h-[250px] border border-slate-800/60 rounded-lg">
                         <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800"><th class="p-2.5">VM Name</th><th class="p-2.5">Snapshot Label</th><th class="p-2.5 text-right">Size (MiB)</th></tr>
-                            </thead>
+                            <thead><tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800"><th class="p-2.5">VM Name</th><th class="p-2.5">Snapshot Label</th><th class="p-2.5 text-right">Size (MiB)</th></tr></thead>
                             <tbody id="snapshotTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
                         </table>
                     </div>
                 </div>
 
                 <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-200">Physical Compute Node Fleet Inventory</h3>
-                        <p class="text-xs text-slate-400">Underlying compute topology and cores</p>
-                    </div>
+                    <div><h3 class="text-sm font-bold text-slate-200">Physical Compute Node Fleet Inventory</h3><p class="text-xs text-slate-400">Underlying compute topology and cores</p></div>
                     <div class="overflow-y-auto max-h-[250px] border border-slate-800/60 rounded-lg">
                         <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800"><th class="p-2.5">Host Name</th><th class="p-2.5">Hardware Model</th><th class="p-2.5 text-center">Cores / CPUs</th><th class="p-2.5 text-right">RAM Size</th><th class="p-2.5 text-right">NVIDIA GPUs</th></tr>
-                            </thead>
+                            <thead><tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800"><th class="p-2.5">Host Name</th><th class="p-2.5">Hardware Model</th><th class="p-2.5 text-center">Cores / CPUs</th><th class="p-2.5 text-right">RAM Size</th><th class="p-2.5 text-right">NVIDIA GPUs</th></tr></thead>
                             <tbody id="hostTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
                         </table>
                     </div>
@@ -191,9 +152,7 @@
             <!-- Global Virtual Machine Right-Sizing Ledger -->
             <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 overflow-hidden shadow-2xl">
                 <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/20">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-200">Infrastructure Workload Ledger</h3>
-                    </div>
+                    <div><h3 class="text-sm font-bold text-slate-200">Infrastructure Workload Ledger</h3></div>
                     <input type="text" id="vmSearch" placeholder="Filter virtual workloads..." class="w-full sm:w-72 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 transition-all shadow-inner">
                 </div>
                 <div class="overflow-x-auto">
@@ -207,7 +166,6 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </main>
 
@@ -220,8 +178,10 @@
         let densityChart = null, dsChart = null, optChart = null;
         window.environmentCache = {};
 
+        // DOM Triggers
         document.getElementById('btnSelectWorkspace').addEventListener('click', initializeWorkspaceHandle);
         document.getElementById('btnOpenCustomer').addEventListener('click', openSelectedCustomerFolder);
+        document.getElementById('btnDeleteCustomer').addEventListener('click', removeSelectedCustomerFolder);
         document.getElementById('btnTriggerCreateMode').addEventListener('click', toggleCreateCustomerMode);
         document.getElementById('btnCancelCreate').addEventListener('click', toggleCreateCustomerMode);
         document.getElementById('btnCreateCustomer').addEventListener('click', createAndOpenNewCustomer);
@@ -303,6 +263,33 @@
             } catch(err) { alert("Error opening the selected customer profile framework."); }
         }
 
+        // Action: Complete cascading removal of a customer space from disk
+        async function removeSelectedCustomerFolder() {
+            const selectedVal = document.getElementById('selCustomer').value;
+            if(!selectedVal) { alert("Please pick a customer folder from the list to delete."); return; }
+
+            const confirmFirst = confirm(`⚠️ DANGER ZONE ⚠️\n\nAre you absolutely sure you want to delete the folder "${selectedVal.replace(/_/g, ' ')}" from your Mac?\n\nThis will permanently delete ALL site files and performance assessments inside it. This cannot be undone.`);
+            if(!confirmFirst) return;
+
+            try {
+                // Native deletion query syntax handle for local system volumes
+                await rootDirectoryHandle.removeEntry(selectedVal, { recursive: true });
+                
+                // Clear UI cache states out of workspace variables
+                activeProjectDirectoryHandle = null;
+                document.getElementById('uploadZone').classList.add('hidden');
+                document.getElementById('locationSelectorZone').classList.add('hidden');
+                document.getElementById('dashboardState').classList.add('hidden');
+                document.getElementById('welcomeState').classList.remove('hidden');
+                
+                await scanRepositoryForCustomers();
+                alert(`Successfully deleted customer profile from directory repository.`);
+            } catch (err) {
+                console.error(err);
+                alert("Could not remove the local directory target layer. Check folder permissions.");
+            }
+        }
+
         async function createAndOpenNewCustomer() {
             const inputVal = document.getElementById('txtNewCustomerName').value.trim();
             if(!inputVal) { alert("Please specify a fresh customer title identifier."); return; }
@@ -336,11 +323,27 @@
                 document.getElementById('locationSelectorZone').classList.remove('hidden');
                 document.getElementById('locationSelectorZone').classList.add('flex');
                 keys.forEach(fileKey => {
-                    const btn = document.createElement('button');
-                    btn.className = "px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-medium cursor-pointer transition-all";
-                    btn.innerText = fileKey;
-                    btn.onclick = () => loadCachedSiteFile(fileKey);
-                    chipContainer.appendChild(btn);
+                    // Create button container wrapping text chip alongside custom delete cross tags
+                    const chipGroup = document.createElement('div');
+                    chipGroup.className = "inline-flex items-center bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-sm";
+
+                    const selectBtn = document.createElement('button');
+                    selectBtn.className = "px-3 py-1 text-slate-200 text-xs font-medium hover:bg-slate-700 transition-colors cursor-pointer";
+                    selectBtn.innerText = fileKey;
+                    selectBtn.onclick = () => loadCachedSiteFile(fileKey);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = "px-2 py-1 bg-slate-900/40 text-slate-500 hover:text-rose-400 hover:bg-rose-950/20 border-l border-slate-700/60 transition-all text-xs font-black cursor-pointer";
+                    deleteBtn.innerHTML = "&times;";
+                    deleteBtn.title = `Delete the file model record for: ${fileKey}`;
+                    deleteBtn.onclick = (e) => {
+                        e.stopPropagation(); // Avoid triggering page updates
+                        removeSpecificSiteFile(fileKey);
+                    };
+
+                    chipGroup.appendChild(selectBtn);
+                    chipGroup.appendChild(deleteBtn);
+                    chipContainer.appendChild(chipGroup);
                 });
                 document.getElementById('welcomeHeader').innerText = `Customer Profile: [ ${activeProjectDirectoryHandle.name.replace(/_/g, ' ')} ]`;
                 document.getElementById('welcomeText').innerText = "Select an existing data collection file from the index chips above, or name and parse a new workbook asset.";
@@ -349,6 +352,27 @@
                 document.getElementById('locationSelectorZone').classList.add('hidden');
                 document.getElementById('welcomeHeader').innerText = `Empty Space Connected: ${activeProjectDirectoryHandle.name}`;
                 document.getElementById('welcomeText').innerText = "No files tracked yet. Enter a destination filename code on the top toolbar and load a spreadsheet payload to map metrics.";
+            }
+        }
+
+        // Action: Remote isolated snapshot file mapping from a customer project folder
+        async function removeSpecificSiteFile(fileKey) {
+            const confirmFileDel = confirm(`Are you sure you want to delete the specific data snapshot "${fileKey}"?\n\nThis file will be completely removed from your customer repository catalog.`);
+            if(!confirmFileDel) return;
+
+            try {
+                const storageFileName = `${fileKey.replace(/ /g, '_')}.json`;
+                await activeProjectDirectoryHandle.removeEntry(storageFileName);
+                
+                // Reset dashboard screens if the file currently open is the one removed
+                document.getElementById('dashboardState').classList.add('hidden');
+                document.getElementById('welcomeState').classList.remove('hidden');
+                document.getElementById('txtLocationName').value = '';
+
+                await scanAndRenderFileChips();
+            } catch(err) {
+                console.error(err);
+                alert("Failed deleting file record instance.");
             }
         }
 
@@ -379,18 +403,15 @@
 
             let targetName = document.getElementById('txtLocationName').value.trim();
             
-            // Explicit safety hook: if empty field, prompt user directly for a real name instead of falling back to cryptic filenames
             if(!targetName) {
                 const promptName = prompt(`Please provide a readable name for this specific infrastructure upload asset:\n(e.g., Stadium Cluster, Southside DC, Q3 Refresh)`, "Stadium Cluster");
                 if (promptName && promptName.trim()) {
                     targetName = promptName.trim();
                 } else {
-                    // Fallback only if prompt cancelled completely
                     targetName = file.name.replace(/\.[^/.]+$/, "");
                 }
             }
 
-            // Standardize string handling for system storage path mapping
             const cleanDisplayKey = targetName.replace(/[^a-z0-9_ ]/gi, '').trim();
             const cleanStorageFileKey = cleanDisplayKey.replace(/ /g, '_');
 
@@ -411,13 +432,11 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
-                
                 const parsedSheets = {};
                 workbook.SheetNames.forEach(sheetName => {
                     const normalizedKey = sheetName.trim().toLowerCase();
                     parsedSheets[normalizedKey] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                 });
-
                 processAndSaveVcenterSite(parsedSheets, storageKey);
             };
             reader.readAsArrayBuffer(file);
@@ -487,10 +506,9 @@
                 await writableStream.close();
                 
                 await scanAndRenderFileChips();
-                // Prefill text element with readable key format cleanly
                 document.getElementById('txtLocationName').value = saveFileName.replace(/_/g, ' ');
-                alert(`Successfully saved record as clean token instance:\n/${activeProjectDirectoryHandle.name}/${finalName}`);
-            } catch (err) { alert("Failed auto-committing baseline configuration records."); }
+                alert(`Successfully saved collection record: /${activeProjectDirectoryHandle.name}/${finalName}`);
+            } catch (err) { alert("Failed auto-committing records."); }
         }
 
         function compileKpiPanels(dc, clusters, hosts, vms, snapWaste, gpus) {
