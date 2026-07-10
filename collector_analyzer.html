@@ -44,15 +44,22 @@
                 <div id="workspaceIndicator" class="w-3 h-3 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50 shrink-0"></div>
                 <div>
                     <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Local Collector Repository</h2>
-                    <p id="workspacePath" class="text-xs text-slate-500 mt-0.5 font-medium">No root workspace repository connected yet.</p>
+                    <p id="workspacePath" class="text-xs text-slate-500 mt-0.5 font-medium">Checking browser storage for remembered repository handle...</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-4 w-full lg:w-auto justify-end">
-                <button id="btnSelectWorkspace" class="w-full lg:w-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/15">
+                <!-- Initial Setup Buttons (Controlled dynamically via IndexedDB states) -->
+                <button id="btnSelectWorkspace" class="hidden w-full lg:w-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/15">
                     Set Local Repository Path
                 </button>
+                
+                <!-- Remembered Restore Button Layout -->
+                <button id="btnRestoreWorkspace" class="hidden w-full lg:w-auto px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-emerald-600/15 animate-pulse">
+                    ⚡ Reconnect Local Repository
+                </button>
 
+                <!-- Advanced Customer Selection Interface -->
                 <div id="projectControls" class="hidden flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
                     <div class="relative flex-1 sm:w-64">
                         <select id="selCustomer" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer">
@@ -69,8 +76,7 @@
                         Open
                     </button>
                     
-                    <!-- Destructive Customer Removal Tool -->
-                    <button id="btnDeleteCustomer" class="px-3 py-2 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-900/50 text-rose-400 text-xs font-medium rounded-xl transition-all cursor-pointer" title="Permanently delete this customer folder and all its loaded files from your Mac drive">
+                    <button id="btnDeleteCustomer" class="px-3 py-2 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-900/50 text-rose-400 text-xs font-medium rounded-xl transition-all cursor-pointer">
                         Delete Folder
                     </button>
 
@@ -179,7 +185,8 @@
         window.environmentCache = {};
 
         // DOM Triggers
-        document.getElementById('btnSelectWorkspace').addEventListener('click', initializeWorkspaceHandle);
+        document.getElementById('btnSelectWorkspace').addEventListener('click', selectNewWorkspaceHandle);
+        document.getElementById('btnRestoreWorkspace').addEventListener('click', restoreSavedWorkspaceHandle);
         document.getElementById('btnOpenCustomer').addEventListener('click', openSelectedCustomerFolder);
         document.getElementById('btnDeleteCustomer').addEventListener('click', removeSelectedCustomerFolder);
         document.getElementById('btnTriggerCreateMode').addEventListener('click', toggleCreateCustomerMode);
@@ -192,18 +199,100 @@
             if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
         });
 
-        async function initializeWorkspaceHandle() {
+        // Run checking algorithm right at bootup initialization loop
+        window.addEventListener('DOMContentLoaded', checkIndexedDbForSavedWorkspace);
+
+        // NATIVE STORAGE ARCHITECTURE: IndexedDB Wrapper Routines
+        function getDbInstance() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open("vAnalystWorkspaceDB", 1);
+                request.onupgradeneeded = (e) => {
+                    e.target.result.createObjectStore("handles");
+                };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        async function checkIndexedDbForSavedWorkspace() {
+            try {
+                const db = await getDbInstance();
+                const tx = db.transaction("handles", "readonly");
+                const store = tx.objectStore("handles");
+                const savedHandle = await new Promise((res) => {
+                    const req = store.get("rootFolder");
+                    req.onsuccess = () => res(req.result);
+                });
+
+                if (savedHandle) {
+                    // Remembered token discovery configuration
+                    document.getElementById('workspacePath').innerText = `Discovered prior workspace token mapping: [ ${savedHandle.name} ]`;
+                    document.getElementById('btnRestoreWorkspace').innerText = `⚡ Reconnect Local Repository [ ${savedHandle.name} ]`;
+                    document.getElementById('btnRestoreWorkspace').classList.remove('hidden');
+                    document.getElementById('btnSelectWorkspace').classList.remove('hidden'); // Offer switch alternate fallback option
+                } else {
+                    // Brand clean load layout configuration
+                    document.getElementById('workspacePath').innerText = "No root workspace repository connected yet.";
+                    document.getElementById('btnSelectWorkspace').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error("IndexedDB initialization fault:", err);
+                document.getElementById('btnSelectWorkspace').classList.remove('hidden');
+            }
+        }
+
+        // Action: User manually picks folder structure map path target
+        async function selectNewWorkspaceHandle() {
             try {
                 rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-                document.getElementById('workspaceIndicator').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40";
-                document.getElementById('workspacePath').innerText = `Active Repository Path Connected: [ ${rootDirectoryHandle.name} ]`;
                 
-                document.getElementById('btnSelectWorkspace').classList.add('hidden');
-                document.getElementById('projectControls').classList.remove('hidden');
-                document.getElementById('projectControls').classList.add('flex');
+                // Persist token footprint down into browser database
+                const db = await getDbInstance();
+                const tx = db.transaction("handles", "readwrite");
+                tx.objectStore("handles").put(rootDirectoryHandle, "rootFolder");
                 
-                await scanRepositoryForCustomers();
+                await handleWorkspaceActivationSuccess();
             } catch (err) { alert("Permission required to index repository files."); }
+        }
+
+        // Action: User taps the reconnection validation shortcut panel
+        async function restoreSavedWorkspaceHandle() {
+            try {
+                const db = await getDbInstance();
+                const tx = db.transaction("handles", "readonly");
+                const savedHandle = await new Promise((res) => {
+                    const req = tx.objectStore("handles").get("rootFolder");
+                    req.onsuccess = () => res(req.result);
+                });
+
+                // Prompts explicit security context review loop check sequence natively
+                const options = { mode: 'readwrite' };
+                if ((await savedHandle.queryPermission(options)) === 'granted' || 
+                    (await savedHandle.requestPermission(options)) === 'granted') {
+                    
+                    rootDirectoryHandle = savedHandle;
+                    await handleWorkspaceActivationSuccess();
+                } else {
+                    alert("Directory access verification declined by security layer.");
+                }
+            } catch(err) {
+                console.error(err);
+                alert("Failed restoring historical security folder tracks smoothly. Try setting a fresh pathway.");
+                document.getElementById('btnSelectWorkspace').classList.remove('hidden');
+            }
+        }
+
+        async function handleWorkspaceActivationSuccess() {
+            document.getElementById('workspaceIndicator').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40";
+            document.getElementById('workspacePath').innerText = `Active Repository Path Connected: [ ${rootDirectoryHandle.name} ]`;
+            
+            document.getElementById('btnSelectWorkspace').classList.add('hidden');
+            document.getElementById('btnRestoreWorkspace').classList.add('hidden');
+            
+            document.getElementById('projectControls').classList.remove('hidden');
+            document.getElementById('projectControls').classList.add('flex');
+            
+            await scanRepositoryForCustomers();
         }
 
         async function scanRepositoryForCustomers() {
@@ -263,7 +352,6 @@
             } catch(err) { alert("Error opening the selected customer profile framework."); }
         }
 
-        // Action: Complete cascading removal of a customer space from disk
         async function removeSelectedCustomerFolder() {
             const selectedVal = document.getElementById('selCustomer').value;
             if(!selectedVal) { alert("Please pick a customer folder from the list to delete."); return; }
@@ -272,22 +360,15 @@
             if(!confirmFirst) return;
 
             try {
-                // Native deletion query syntax handle for local system volumes
                 await rootDirectoryHandle.removeEntry(selectedVal, { recursive: true });
-                
-                // Clear UI cache states out of workspace variables
                 activeProjectDirectoryHandle = null;
                 document.getElementById('uploadZone').classList.add('hidden');
                 document.getElementById('locationSelectorZone').classList.add('hidden');
                 document.getElementById('dashboardState').classList.add('hidden');
                 document.getElementById('welcomeState').classList.remove('hidden');
-                
                 await scanRepositoryForCustomers();
                 alert(`Successfully deleted customer profile from directory repository.`);
-            } catch (err) {
-                console.error(err);
-                alert("Could not remove the local directory target layer. Check folder permissions.");
-            }
+            } catch (err) { alert("Could not remove the local directory target layer."); }
         }
 
         async function createAndOpenNewCustomer() {
@@ -323,7 +404,6 @@
                 document.getElementById('locationSelectorZone').classList.remove('hidden');
                 document.getElementById('locationSelectorZone').classList.add('flex');
                 keys.forEach(fileKey => {
-                    // Create button container wrapping text chip alongside custom delete cross tags
                     const chipGroup = document.createElement('div');
                     chipGroup.className = "inline-flex items-center bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-sm";
 
@@ -335,11 +415,7 @@
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = "px-2 py-1 bg-slate-900/40 text-slate-500 hover:text-rose-400 hover:bg-rose-950/20 border-l border-slate-700/60 transition-all text-xs font-black cursor-pointer";
                     deleteBtn.innerHTML = "&times;";
-                    deleteBtn.title = `Delete the file model record for: ${fileKey}`;
-                    deleteBtn.onclick = (e) => {
-                        e.stopPropagation(); // Avoid triggering page updates
-                        removeSpecificSiteFile(fileKey);
-                    };
+                    deleteBtn.onclick = (e) => { e.stopPropagation(); removeSpecificSiteFile(fileKey); };
 
                     chipGroup.appendChild(selectBtn);
                     chipGroup.appendChild(deleteBtn);
@@ -355,7 +431,6 @@
             }
         }
 
-        // Action: Remote isolated snapshot file mapping from a customer project folder
         async function removeSpecificSiteFile(fileKey) {
             const confirmFileDel = confirm(`Are you sure you want to delete the specific data snapshot "${fileKey}"?\n\nThis file will be completely removed from your customer repository catalog.`);
             if(!confirmFileDel) return;
@@ -363,17 +438,11 @@
             try {
                 const storageFileName = `${fileKey.replace(/ /g, '_')}.json`;
                 await activeProjectDirectoryHandle.removeEntry(storageFileName);
-                
-                // Reset dashboard screens if the file currently open is the one removed
                 document.getElementById('dashboardState').classList.add('hidden');
                 document.getElementById('welcomeState').classList.remove('hidden');
                 document.getElementById('txtLocationName').value = '';
-
                 await scanAndRenderFileChips();
-            } catch(err) {
-                console.error(err);
-                alert("Failed deleting file record instance.");
-            }
+            } catch(err) { alert("Failed deleting file record instance."); }
         }
 
         async function loadCachedSiteFile(fileKey) {
@@ -402,14 +471,10 @@
             if (!file) return;
 
             let targetName = document.getElementById('txtLocationName').value.trim();
-            
             if(!targetName) {
                 const promptName = prompt(`Please provide a readable name for this specific infrastructure upload asset:\n(e.g., Stadium Cluster, Southside DC, Q3 Refresh)`, "Stadium Cluster");
-                if (promptName && promptName.trim()) {
-                    targetName = promptName.trim();
-                } else {
-                    targetName = file.name.replace(/\.[^/.]+$/, "");
-                }
+                if (promptName && promptName.trim()) targetName = promptName.trim();
+                else targetName = file.name.replace(/\.[^/.]+$/, "");
             }
 
             const cleanDisplayKey = targetName.replace(/[^a-z0-9_ ]/gi, '').trim();
@@ -423,7 +488,6 @@
                     return;
                 }
             }
-
             processFilePayload(file, cleanStorageFileKey, cleanDisplayKey);
         }
 
