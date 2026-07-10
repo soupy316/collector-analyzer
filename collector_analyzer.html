@@ -119,7 +119,6 @@
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Clusters</p><p id="kpiClusters" class="text-2xl font-black mt-1 text-purple-400">-</p></div>
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">ESXi Hosts</p><p id="kpiHosts" class="text-2xl font-black mt-1 text-cyan-400">-</p></div>
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total Configured VMs</p><p id="kpiVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
-                <!-- Swapped out Snapshot waste widget for count of Active Running instances -->
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Powered On VMs</p><p id="kpiActiveVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active NVIDIA GPUs</p><p id="kpiGPUs" class="text-2xl font-black mt-1 text-amber-400">-</p></div>
             </div>
@@ -143,7 +142,6 @@
                     </div>
                 </div>
 
-                <!-- Refined Node Fleet table grid layout stretching with custom specific properties -->
                 <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4 lg:col-span-2">
                     <div><h3 class="text-sm font-bold text-slate-200">Physical Compute Node Fleet Inventory</h3><p class="text-xs text-slate-400">Underlying hardware topology specifications and active memory mappings</p></div>
                     <div class="overflow-y-auto max-h-[300px] border border-slate-800/60 rounded-lg">
@@ -335,7 +333,6 @@
                 document.getElementById('uploadZone').classList.remove('hidden');
                 document.getElementById('txtLocationName').value = '';
                 
-                // Requirement 1: Change label title to pull the dynamic name text dynamically
                 const formattedName = selectedVal.replace(/_/g, ' ');
                 document.getElementById('lblCustomerClusters').innerText = `${formattedName} Clusters:`;
                 
@@ -551,7 +548,6 @@
             document.getElementById('kpiVMs').innerText = vms.length;
             document.getElementById('kpiGPUs').innerText = gpus;
             
-            // Requirement 2: Calculate explicit Powered On running metrics dynamically
             const activeCount = vms.filter(v => v.state.toLowerCase().includes('on')).length;
             document.getElementById('kpiActiveVMs').innerText = activeCount;
         }
@@ -610,7 +606,6 @@
             });
         }
 
-        // Requirement 3: Render Extended Physical Fleet Table properties mapped out of standard sheet object keys
         function renderPhysicalFleetRegister(hosts) {
             const tbody = document.getElementById('hostTableBody'); tbody.innerHTML = '';
             if(hosts.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 italic">No physical compute nodes found.</td></tr>`; return; }
@@ -622,11 +617,10 @@
                 const hwModel = h['Model'] || h['Hardware Model'] || '-';
                 const cpuModel = h['CPU Model'] || h['Processor Type'] || h['Processor Model'] || '-';
                 
-                // Parse out CPU GHz fields
-                const cpuSpeedRaw = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || 0);
-                const cpuSpeedStr = cpuSpeedRaw > 0 ? `${cpuSpeedRaw.toFixed(2)} GHz` : '-';
+                // FIXED CALCULATION: Extracted the raw speed and cleanly divided it by 1000 to convert from MHz to GHz decimals
+                const cpuSpeedRaw = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || h['CPU Speed MHz'] || 0);
+                const cpuSpeedStr = cpuSpeedRaw > 0 ? `${(cpuSpeedRaw / 1000).toFixed(2)} GHz` : '-';
                 
-                // Standardize RAM scaling parsing structures 
                 const ramRaw = parseFloat(h['Memory Size'] || h['Memory Size (MiB)'] || h['RAM'] || 0);
                 const ramString = ramRaw > 1024 ? `${(ramRaw / 1024).toFixed(0)} GB` : ramRaw > 0 ? `${ramRaw} MB` : '-';
                 
