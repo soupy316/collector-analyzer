@@ -123,9 +123,11 @@
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active NVIDIA GPUs</p><p id="kpiGPUs" class="text-2xl font-black mt-1 text-amber-400">-</p></div>
             </div>
 
-            <!-- Charts Section (Only Cluster Density remains, full width) -->
-            <div class="grid grid-cols-1 gap-6">
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Cluster Host Workload Densities</h3><div class="relative flex-1 min-h-0"><canvas id="clusterDensityChart"></canvas></div></div>
+                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Datastore Capacity Profiles (TB)</h3><div class="relative flex-1 min-h-0"><canvas id="datastoreChart"></canvas></div></div>
+                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">VM Resource Optimization Analysis</h3><div class="relative flex-1 min-h-0"><canvas id="vmOptimizationChart"></canvas></div></div>
             </div>
 
             <!-- Optimized Grid Block: Snapshot Footprint Alongside Extended Host Fleet Inventory Grid -->
@@ -185,7 +187,7 @@
         let currentLoadedFilesMap = {};
         let scannedCustomerFoldersList = [];
         
-        let densityChart = null;
+        let densityChart = null, dsChart = null, optChart = null;
         window.environmentCache = {};
 
         // DOM Triggers
@@ -285,7 +287,7 @@
             selectEl.innerHTML = '<option value="">-- Select Existing Customer --</option>';
 
             for await (const entry of rootDirectoryHandle.values()) {
-                if (entry.kind === 'directory' && !entry.name.startsWith('.')) scannedCustomerFoldersList.push(entry.name);
+                if (entry.kind === 'directory') scannedCustomerFoldersList.push(entry.name);
             }
 
             scannedCustomerFoldersList.sort().forEach(folderName => {
@@ -440,7 +442,7 @@
                 document.getElementById('dashboardState').classList.remove('hidden');
 
                 compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.gpus);
-                compileVisualCharts(stateObj.raw.clusters);
+                compileVisualCharts(stateObj.raw.clusters, stateObj.raw.datastores, window.environmentCache.vmRollup);
                 renderSnapshotRiskRegister(stateObj.raw.snaps);
                 renderPhysicalFleetRegister(stateObj.raw.hosts);
                 renderWorkloadLedger(window.environmentCache.vmRollup);
@@ -525,7 +527,7 @@
             document.getElementById('dashboardState').classList.remove('hidden');
 
             compileKpiPanels(dcList.length, clusterList.length, hostList.length, optimizedVmList, totalGPUs);
-            compileVisualCharts(clusterList);
+            compileVisualCharts(clusterList, dsList, optimizedVmList);
             renderSnapshotRiskRegister(snapList);
             renderPhysicalFleetRegister(hostList);
             renderWorkloadLedger(optimizedVmList);
@@ -550,7 +552,7 @@
             document.getElementById('kpiActiveVMs').innerText = activeCount;
         }
 
-        function compileVisualCharts(clusters) {
+        function compileVisualCharts(clusters, datastores, vms) {
             const ctxCluster = document.getElementById('clusterDensityChart').getContext('2d');
             if(densityChart) densityChart.destroy();
             const clusterSample = clusters.slice(0, 8);
@@ -561,6 +563,35 @@
                     datasets: [{ label: 'Avg CPU Load %', data: clusterSample.map(c => parseFloat(c['CPU Usage %'] || 0)), backgroundColor: 'rgba(99, 102, 241, 0.75)' }, { label: 'Avg Memory Load %', data: clusterSample.map(c => parseFloat(c['Memory Usage %'] || 0)), backgroundColor: 'rgba(168, 85, 247, 0.75)' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { max: 100, ticks: { color: '#64748b' } }, x: { ticks: { color: '#64748b' } } } }
+            });
+
+            const ctxDs = document.getElementById('datastoreChart').getContext('2d');
+            if(dsChart) dsChart.destroy();
+            const dsSample = datastores.slice(0, 6);
+            dsChart = new Chart(ctxDs, {
+                type: 'doughnut',
+                data: {
+                    labels: dsSample.map(d => d['Datastore Name'] || 'Volume'),
+                    datasets: [{ data: dsSample.map(d => parseFloat(d['Capacity (MiB)'] || 0) / 1024 / 1024), backgroundColor: ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } } }
+            });
+
+            const ctxOpt = document.getElementById('vmOptimizationChart').getContext('2d');
+            if(optChart) optChart.destroy();
+            let optimal = 0, oversized = 0, idle = 0;
+            vms.forEach(v => {
+                if(v.state.toLowerCase().includes('off')) idle++;
+                else if(v.peakCpu95th < 20 && v.peakMem95th < 30) oversized++;
+                else optimal++;
+            });
+            optChart = new Chart(ctxOpt, {
+                type: 'polarArea',
+                data: {
+                    labels: ['Optimized Execution', 'Oversized Allocation', 'Powered-Off / Idle'],
+                    datasets: [{ data: [optimal, oversized, idle], backgroundColor: ['rgba(16, 185, 129, 0.65)', 'rgba(245, 158, 11, 0.65)', 'rgba(100, 116, 139, 0.65)'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
             });
         }
 
@@ -586,6 +617,7 @@
                 const hwModel = h['Model'] || h['Hardware Model'] || '-';
                 const cpuModel = h['CPU Model'] || h['Processor Type'] || h['Processor Model'] || '-';
                 
+                // FIXED CALCULATION: Extracted the raw speed and cleanly divided it by 1000 to convert from MHz to GHz decimals
                 const cpuSpeedRaw = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || h['CPU Speed MHz'] || 0);
                 const cpuSpeedStr = cpuSpeedRaw > 0 ? `${(cpuSpeedRaw / 1000).toFixed(2)} GHz` : '-';
                 
