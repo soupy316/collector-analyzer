@@ -26,7 +26,7 @@
             
             <!-- File Input Upload (Active when a project folder is initialized) -->
             <div id="uploadZone" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <input type="text" id="txtLocationName" placeholder="Saved File Name (e.g., Chicago_DC1)..." class="px-3 py-2 bg-slate-900 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-medium w-full sm:w-64">
+                <input type="text" id="txtLocationName" placeholder="Saved Name (e.g., Stadium Cluster, Southside)..." class="px-3 py-2 bg-slate-900 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-medium w-full sm:w-80" title="Give this specific spreadsheet upload a meaningful location or cluster nickname">
                 <label class="flex items-center justify-center gap-2.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl cursor-pointer transition-all text-sm font-medium shadow-lg shadow-indigo-600/10 group whitespace-nowrap">
                     <svg class="w-4 h-4 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span class="text-white">Process & Add Spreadsheet</span>
@@ -56,7 +56,6 @@
 
                 <!-- Step 2: Advanced Customer Selection Interface -->
                 <div id="projectControls" class="hidden flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-                    
                     <!-- Searchable Customer Dropdown Selection Layout -->
                     <div class="relative flex-1 sm:w-72">
                         <select id="selCustomer" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer">
@@ -216,12 +215,11 @@
         let rootDirectoryHandle = null;
         let activeProjectDirectoryHandle = null;
         let currentLoadedFilesMap = {};
-        let scannedCustomerFoldersList = []; // Keeps master arrays of local folder directories
+        let scannedCustomerFoldersList = [];
         
         let densityChart = null, dsChart = null, optChart = null;
         window.environmentCache = {};
 
-        // Action UI Layout Binds
         document.getElementById('btnSelectWorkspace').addEventListener('click', initializeWorkspaceHandle);
         document.getElementById('btnOpenCustomer').addEventListener('click', openSelectedCustomerFolder);
         document.getElementById('btnTriggerCreateMode').addEventListener('click', toggleCreateCustomerMode);
@@ -234,7 +232,6 @@
             if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
         });
 
-        // 1. Initialize Master Directory and Scan for Customers
         async function initializeWorkspaceHandle() {
             try {
                 rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
@@ -249,12 +246,9 @@
             } catch (err) { alert("Permission required to index repository files."); }
         }
 
-        // 2. Scan Directory looking for pre-existing customer folders
         async function scanRepositoryForCustomers() {
             scannedCustomerFoldersList = [];
             const selectEl = document.getElementById('selCustomer');
-            
-            // Clear prior listings out of dropdown except default layout index
             selectEl.innerHTML = '<option value="">-- Select Existing Customer --</option>';
 
             for await (const entry of rootDirectoryHandle.values()) {
@@ -263,7 +257,6 @@
                 }
             }
 
-            // Alphabetically sort listings for easy navigation
             scannedCustomerFoldersList.sort().forEach(folderName => {
                 const opt = document.createElement('option');
                 opt.value = folderName;
@@ -275,7 +268,6 @@
             document.getElementById('welcomeText').innerText = `Discovered ${scannedCustomerFoldersList.length} customer records inside your directory track. Choose one from the dropdown or click "+ New Customer".`;
         }
 
-        // 3. Live search filter on dropdown selector
         function filterCustomerDropdown() {
             const query = document.getElementById('txtCustomerSearch').value.toLowerCase();
             const selectEl = document.getElementById('selCustomer');
@@ -291,7 +283,6 @@
             });
         }
 
-        // 4. Toggle visibility between selector options vs creator paths
         function toggleCreateCustomerMode() {
             document.getElementById('projectControls').classList.toggle('hidden');
             document.getElementById('projectControls').classList.toggle('flex');
@@ -300,7 +291,6 @@
             document.getElementById('txtNewCustomerName').value = '';
         }
 
-        // 5. Action: Open an existing customer catalog space
         async function openSelectedCustomerFolder() {
             const selectedVal = document.getElementById('selCustomer').value;
             if(!selectedVal) { alert("Please pick a customer directory target record first."); return; }
@@ -308,33 +298,23 @@
             try {
                 activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(selectedVal, { create: false });
                 document.getElementById('uploadZone').classList.remove('hidden');
-                
-                // Clear inputs for neat fresh states
                 document.getElementById('txtLocationName').value = '';
                 await scanAndRenderFileChips();
             } catch(err) { alert("Error opening the selected customer profile framework."); }
         }
 
-        // 6. Action: Spin up fresh asset subfolder track explicitly
         async function createAndOpenNewCustomer() {
             const inputVal = document.getElementById('txtNewCustomerName').value.trim();
             if(!inputVal) { alert("Please specify a fresh customer title identifier."); return; }
-            
             const cleanFolder = inputVal.replace(/[^a-z0-9_]/gi, '_');
 
             try {
-                // Instantiates native folder directory paths on disk structure
                 activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(cleanFolder, { create: true });
-                
-                // Refresh master repository array index track
                 await scanRepositoryForCustomers();
-                
-                // Reset UI layouts out of input toggles
                 toggleCreateCustomerMode();
                 document.getElementById('selCustomer').value = cleanFolder;
                 document.getElementById('uploadZone').classList.remove('hidden');
                 document.getElementById('txtLocationName').value = '';
-
                 await scanAndRenderFileChips();
             } catch(err) { alert("Failed constructing a physical directory block inside repository lines."); }
         }
@@ -346,7 +326,7 @@
             
             for await (const entry of activeProjectDirectoryHandle.values()) {
                 if (entry.kind === 'file' && entry.name.endsWith('.json')) {
-                    const displayName = entry.name.replace('.json', '');
+                    const displayName = entry.name.replace('.json', '').replace(/_/g, ' ');
                     currentLoadedFilesMap[displayName] = entry;
                 }
             }
@@ -398,20 +378,35 @@
             if (!file) return;
 
             let targetName = document.getElementById('txtLocationName').value.trim();
+            
+            // Explicit safety hook: if empty field, prompt user directly for a real name instead of falling back to cryptic filenames
             if(!targetName) {
-                targetName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9_]/gi, '_');
-            } else {
-                targetName = targetName.replace(/[^a-z0-9_]/gi, '_');
-            }
-
-            if (currentLoadedFilesMap[targetName]) {
-                const choice = confirm(`A record named "${targetName}" already exists in this customer folder.\n\nClick OK to automatically add a timestamp suffix and save as a new version.\nClick Cancel to overwrite the existing file.`);
-                if (choice) {
-                    const stamp = new Date().toISOString().split('T')[0];
-                    targetName = `${targetName}_${stamp}`;
+                const promptName = prompt(`Please provide a readable name for this specific infrastructure upload asset:\n(e.g., Stadium Cluster, Southside DC, Q3 Refresh)`, "Stadium Cluster");
+                if (promptName && promptName.trim()) {
+                    targetName = promptName.trim();
+                } else {
+                    // Fallback only if prompt cancelled completely
+                    targetName = file.name.replace(/\.[^/.]+$/, "");
                 }
             }
 
+            // Standardize string handling for system storage path mapping
+            const cleanDisplayKey = targetName.replace(/[^a-z0-9_ ]/gi, '').trim();
+            const cleanStorageFileKey = cleanDisplayKey.replace(/ /g, '_');
+
+            if (currentLoadedFilesMap[cleanDisplayKey]) {
+                const choice = confirm(`A record named "${cleanDisplayKey}" already exists in this customer folder.\n\nClick OK to automatically add a timestamp suffix and save as a new version.\nClick Cancel to overwrite the existing file.`);
+                if (choice) {
+                    const stamp = new Date().toISOString().split('T')[0];
+                    processFilePayload(file, `${cleanStorageFileKey}_${stamp}`, `${cleanDisplayKey} (${stamp})`);
+                    return;
+                }
+            }
+
+            processFilePayload(file, cleanStorageFileKey, cleanDisplayKey);
+        }
+
+        function processFilePayload(file, storageKey, displayKey) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
@@ -423,7 +418,7 @@
                     parsedSheets[normalizedKey] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
                 });
 
-                processAndSaveVcenterSite(parsedSheets, targetName);
+                processAndSaveVcenterSite(parsedSheets, storageKey);
             };
             reader.readAsArrayBuffer(file);
         }
@@ -492,7 +487,9 @@
                 await writableStream.close();
                 
                 await scanAndRenderFileChips();
-                alert(`Successfully saved collection record: /${activeProjectDirectoryHandle.name}/${finalName}`);
+                // Prefill text element with readable key format cleanly
+                document.getElementById('txtLocationName').value = saveFileName.replace(/_/g, ' ');
+                alert(`Successfully saved record as clean token instance:\n/${activeProjectDirectoryHandle.name}/${finalName}`);
             } catch (err) { alert("Failed auto-committing baseline configuration records."); }
         }
 
