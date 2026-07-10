@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>collector_analyzer | Enterprise vSphere Infrastructure Suite</title>
+    <title>collector_analyzer | Local Workspace Infrastructure Suite</title>
     <!-- Tailwind CSS v4 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- SheetJS (XLSX Parser) -->
@@ -20,28 +20,52 @@
                 <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
-                    <p class="text-xs text-slate-400">Comprehensive 21-Tab Infrastructure Optimization & Assessment Suite</p>
+                    <p class="text-xs text-slate-400">Comprehensive Local Workspace & 21-Tab Infrastructure Assessment Suite</p>
                 </div>
             </div>
             
-            <!-- File Input Upload -->
-            <label class="flex items-center gap-2.5 px-4 py-2 bg-slate-800 hover:bg-slate-750 border border-slate-700/60 hover:border-slate-600 rounded-xl cursor-pointer transition-all text-sm font-medium shadow-inner group">
-                <svg class="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                <span class="text-slate-200">Load Export Spreadsheet</span>
-                <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
-            </label>
+            <!-- File Input Upload (Only active when project folder is initialized) -->
+            <div class="flex items-center gap-3">
+                <label id="uploadLabel" class="hidden items-center gap-2.5 px-4 py-2 bg-slate-800 hover:bg-slate-750 border border-slate-700/60 hover:border-slate-600 rounded-xl cursor-pointer transition-all text-sm font-medium shadow-inner group">
+                    <svg class="w-4 h-4 text-indigo-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    <span class="text-slate-200">Parse & Save Spreadsheet</span>
+                    <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
+                </label>
+            </div>
         </div>
     </header>
 
     <main class="max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8">
         
+        <!-- Local Directory Workspace Control Bar -->
+        <div class="bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+            <div class="flex items-center gap-3">
+                <div id="workspaceIndicator" class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-lg shadow-rose-500/40"></div>
+                <div>
+                    <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Mac File System Workspace Workspace</h2>
+                    <p id="workspacePath" class="text-xs text-slate-500 mt-0.5">No root workspace directory initialized yet.</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <button id="btnSelectWorkspace" class="w-full md:w-auto px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-xl transition-all cursor-pointer shadow-md shadow-indigo-600/10">
+                    Set Local Root Directory
+                </button>
+                <div id="projectControls" class="hidden items-center gap-2 w-full md:w-auto">
+                    <input type="text" id="txtProjectName" placeholder="Enter Customer/Project ID..." class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-medium">
+                    <button id="btnLoadOrCreateProject" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition-all cursor-pointer">
+                        Initialize Project Folder
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Welcome Screen (Pre-upload Empty State) -->
         <div id="welcomeState" class="flex flex-col items-center justify-center border border-slate-800 bg-slate-900/10 rounded-2xl py-24 px-6 text-center my-8 shadow-xl max-w-2xl mx-auto">
             <div class="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-5 shadow-inner">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2zm5-2V3a1 1 0 011-1h6a1 1 0 011 1v2M5 7h14"/></svg>
             </div>
-            <h2 class="text-xl font-bold text-slate-100 tracking-tight mb-2">Awaiting System Audit Inventory File</h2>
-            <p class="text-slate-400 text-sm leading-relaxed max-w-md mb-6">Select or drop your multi-tab spreadsheet layout into <code class="text-indigo-300 bg-slate-800/60 px-1 py-0.5 rounded text-xs">collector_analyzer</code> containing inventory configurations (<code class="text-indigo-300 bg-slate-800/60 px-1 py-0.5 rounded text-xs">vDataCenter</code>, <code class="text-indigo-300 bg-slate-800/60 px-1 py-0.5 rounded text-xs">vHost</code>, <code class="text-indigo-300 bg-slate-800/60 px-1 py-0.5 rounded text-xs">vmList</code>) to compile dashboards completely locally.</p>
+            <h2 id="welcomeHeader" class="text-xl font-bold text-slate-100 tracking-tight mb-2">Workspace Setup Required</h2>
+            <p id="welcomeText" class="text-slate-400 text-sm leading-relaxed max-w-md">To get started, click the button above to authorize your web app to read and write folders inside a project catalog on your Mac local filesystem.</p>
         </div>
 
         <!-- Dashboard UI Workspace (Hidden until file is loaded successfully) -->
@@ -104,8 +128,7 @@
 
             <!-- Multi-tab Optimization and Alerts Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                <!-- Risk 1: Snapshot Waste & Age Watch -->
+                <!-- Active Storage Risks: Snapshot Footprint -->
                 <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4">
                     <div>
                         <h3 class="text-sm font-bold text-slate-200">Active Storage Risks: Snapshot Footprint</h3>
@@ -120,9 +143,7 @@
                                     <th class="p-2.5 text-right">Size (MiB)</th>
                                 </tr>
                             </thead>
-                            <tbody id="snapshotTableBody" class="divide-y divide-slate-800/40 text-slate-300">
-                                <!-- Populated dynamically -->
-                            </tbody>
+                            <tbody id="snapshotTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
                         </table>
                     </div>
                 </div>
@@ -144,13 +165,10 @@
                                     <th class="p-2.5 text-right">NVIDIA GPUs</th>
                                 </tr>
                             </thead>
-                            <tbody id="hostTableBody" class="divide-y divide-slate-800/40 text-slate-300">
-                                <!-- Populated dynamically -->
-                            </tbody>
+                            <tbody id="hostTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
                         </table>
                     </div>
                 </div>
-
             </div>
 
             <!-- Global Virtual Machine Right-Sizing Ledger -->
@@ -177,9 +195,7 @@
                                 <th class="px-6 py-3.5 text-right">Disk Consumed</th>
                             </tr>
                         </thead>
-                        <tbody id="vmTableBody" class="divide-y divide-slate-800/50 text-slate-300">
-                            <!-- Injected dynamically -->
-                        </tbody>
+                        <tbody id="vmTableBody" class="divide-y divide-slate-800/50 text-slate-300"></tbody>
                     </table>
                 </div>
             </div>
@@ -188,14 +204,103 @@
     </main>
 
     <script>
-        // Store running charts to prevent layout bugs during file reload cycles
+        // Global references for File System Access API
+        let rootDirectoryHandle = null;
+        let activeProjectDirectoryHandle = null;
+        
         let densityChart = null, dsChart = null, optChart = null;
         window.environmentCache = {};
 
+        // UI Binding Hooks
+        document.getElementById('btnSelectWorkspace').addEventListener('click', initializeWorkspaceHandle);
+        document.getElementById('btnLoadOrCreateProject').addEventListener('click', initializeProjectWorkspace);
         document.getElementById('excelFile').addEventListener('change', parseAuditWorkbook, false);
         document.getElementById('vmSearch').addEventListener('input', () => {
             if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
         });
+
+        // 1. Prompt User to choose Local Folder Workspace
+        async function initializeWorkspaceHandle() {
+            try {
+                rootDirectoryHandle = await window.showDirectoryPicker({
+                    mode: 'readwrite'
+                });
+                
+                document.getElementById('workspaceIndicator').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40";
+                document.getElementById('workspacePath').innerText = `Active Workspace Folder Connected: [ ${rootDirectoryHandle.name} ]`;
+                
+                // Expose Project Controls UI
+                document.getElementById('projectControls').classList.remove('hidden');
+                document.getElementById('btnSelectWorkspace').classList.add('hidden');
+
+                // Adjust text states
+                document.getElementById('welcomeHeader').innerText = "Awaiting Project Initialization";
+                document.getElementById('welcomeText').innerText = "Type a Customer or Project Name into the input text box above to load or create a project data workspace.";
+            } catch (err) {
+                console.error("Workspace access rejected:", err);
+                alert("File System Access API clearance is required to run multi-project workspaces.");
+            }
+        }
+
+        // 2. Initialize or retrieve Subfolder per customer inside parent root directory
+        async function initializeProjectWorkspace() {
+            const rawName = document.getElementById('txtProjectName').value.trim();
+            if(!rawName) { alert("Please provide a valid project identifier name."); return; }
+            
+            const cleanProjectName = rawName.replace(/[^a-z0-9_]/gi, '_'); // Sanitize name strings
+            
+            try {
+                // Request directory folder creation natively (Options: create true ensures it matches/spins up directory)
+                activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(cleanProjectName, { create: true });
+                
+                // Check if a pre-existing cached dataset state exists inside the directory catalog
+                try {
+                    const existingFileHandle = await activeProjectDirectoryHandle.getFileHandle('project_state.json');
+                    const file = await existingFileHandle.getFile();
+                    const jsonContent = await file.text();
+                    const stateObj = JSON.parse(jsonContent);
+                    
+                    // Hydrate UI State instantly from local file database cache
+                    window.environmentCache = stateObj.cache;
+                    document.getElementById('welcomeState').classList.add('hidden');
+                    document.getElementById('dashboardState').classList.remove('hidden');
+                    document.getElementById('uploadLabel').classList.remove('hidden');
+
+                    compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.snapWaste, stateObj.kpis.gpus);
+                    compileVisualCharts(stateObj.raw.clusters, stateObj.raw.datastores, window.environmentCache.vmRollup);
+                    renderSnapshotRiskRegister(stateObj.raw.snaps);
+                    renderPhysicalFleetRegister(stateObj.raw.hosts);
+                    renderWorkloadLedger(window.environmentCache.vmRollup);
+                    
+                    alert(`Loaded existing profile analysis found inside local directory path: /${cleanProjectName}/project_state.json`);
+                } catch(noStateErr) {
+                    // Fresh project layout
+                    document.getElementById('welcomeState').classList.remove('hidden');
+                    document.getElementById('dashboardState').classList.add('hidden');
+                    document.getElementById('uploadLabel').classList.remove('hidden');
+                    
+                    document.getElementById('welcomeHeader').innerText = `Project [ ${cleanProjectName} ] Active`;
+                    document.getElementById('welcomeText').innerText = "Workspace directory locked. Now choose a 21-tab audit workbook spreadsheet using the 'Parse & Save Spreadsheet' button at the top right. Results will auto-save to your folder directory.";
+                }
+            } catch(dirErr) {
+                console.error("Failed creating project handle:", dirErr);
+                alert("Could not initialize local file system subfolder profile.");
+            }
+        }
+
+        // 3. Save serialized configuration structures back down into local disk path
+        async function saveStateToLocalFolder(stateObj) {
+            if(!activeProjectDirectoryHandle) return;
+            try {
+                const fileHandle = await activeProjectDirectoryHandle.getFileHandle('project_state.json', { create: true });
+                const writableStream = await fileHandle.createWritable();
+                await writableStream.write(JSON.stringify(stateObj, null, 2));
+                await writableStream.close();
+                console.log("Auto-saved assessment mapping down onto directory path structural tree layer.");
+            } catch (err) {
+                console.error("Could not execute local state save routine:", err);
+            }
+        }
 
         function parseAuditWorkbook(e) {
             const file = e.target.files[0];
@@ -206,7 +311,6 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 
-                // Read sheet layouts out of workbook dynamically using case normalization
                 const parsedSheets = {};
                 workbook.SheetNames.forEach(sheetName => {
                     const normalizedKey = sheetName.trim().toLowerCase();
@@ -228,24 +332,16 @@
             const vmemList = sheets['vmemory'] || [];
             const snapList = sheets['vsnapshot'] || [];
 
-            // 1. Snapshot Aggregations
             let totalSnapWasteMiB = 0;
-            snapList.forEach(s => {
-                totalSnapWasteMiB += parseFloat(s['Size MiB (total)'] || s['Size MiB (vmsn)'] || 0);
-            });
+            snapList.forEach(s => { totalSnapWasteMiB += parseFloat(s['Size MiB (total)'] || s['Size MiB (vmsn)'] || 0); });
 
-            // 2. GPU Footprint Scanning
             let totalGPUs = 0;
-            hostList.forEach(h => {
-                totalGPUs += parseInt(h['GPU Count'] || 0);
-            });
+            hostList.forEach(h => { totalGPUs += parseInt(h['GPU Count'] || 0); });
 
-            // 3. Map Performance Metrics across nested data paths
             const cpuProfileMap = {}, memProfileMap = {};
             vcpuList.forEach(v => { if(v['VM Name']) cpuProfileMap[v['VM Name']] = parseFloat(v['95th Percentile % (recommended)'] || v['Peak %'] || v['Average %'] || 0); });
             vmemList.forEach(v => { if(v['VM Name']) memProfileMap[v['VM Name']] = parseFloat(v['95th Percentile % (recommended)'] || v['Peak %'] || v['Average %'] || 0); });
 
-            // 4. Construct unified Virtual Machine structures
             const optimizedVmList = vmListTab.map(vm => {
                 const name = vm['VM Name'];
                 return {
@@ -254,7 +350,7 @@
                     os: vm['Guest OS'] || vm['Guest Operating System'] || 'Other Linux/Windows',
                     vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || 0),
                     ram: parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || 0),
-                    consumedStorage: parseFloat(vm['Consumed (MiB)'] || vm['Capacity (MiB)'] || 0) / 1024, // Convert to GB
+                    consumedStorage: parseFloat(vm['Consumed (MiB)'] || vm['Capacity (MiB)'] || 0) / 1024,
                     peakCpu95th: cpuProfileMap[name] || 0,
                     peakMem95th: memProfileMap[name] || 0
                 };
@@ -262,16 +358,24 @@
 
             window.environmentCache.vmRollup = optimizedVmList;
 
-            // Trigger UI State Shift
+            // Trigger State Visual Shift
             document.getElementById('welcomeState').classList.add('hidden');
             document.getElementById('dashboardState').classList.remove('hidden');
 
-            // Render Metrics Views & Components
+            // Render Views
             compileKpiPanels(dcList.length, clusterList.length, hostList.length, optimizedVmList, totalSnapWasteMiB, totalGPUs);
             compileVisualCharts(clusterList, dsList, optimizedVmList);
             renderSnapshotRiskRegister(snapList);
             renderPhysicalFleetRegister(hostList);
             renderWorkloadLedger(optimizedVmList);
+
+            // package layout metrics payload state matrix to back down into workspace folder disk files
+            const fullProjectState = {
+                kpis: { dc: dcList.length, clusters: clusterList.length, hosts: hostList.length, snapWaste: totalSnapWasteMiB, gpus: totalGPUs },
+                cache: { vmRollup: optimizedVmList },
+                raw: { clusters: clusterList, datastores: dsList, snaps: snapList, hosts: hostList }
+            };
+            saveStateToLocalFolder(fullProjectState);
         }
 
         function compileKpiPanels(dc, clusters, hosts, vms, snapWaste, gpus) {
@@ -288,140 +392,78 @@
         function compileVisualCharts(clusters, datastores, vms) {
             const ctxCluster = document.getElementById('clusterDensityChart').getContext('2d');
             if(densityChart) densityChart.destroy();
-            
             const clusterSample = clusters.slice(0, 8);
             densityChart = new Chart(ctxCluster, {
                 type: 'bar',
                 data: {
                     labels: clusterSample.map(c => c['Cluster Name'] || 'Cluster'),
-                    datasets: [{
-                        label: 'Avg CPU Load %',
-                        data: clusterSample.map(c => parseFloat(c['CPU Usage %'] || 0)),
-                        backgroundColor: 'rgba(99, 102, 241, 0.75)'
-                    }, {
-                        label: 'Avg Memory Load %',
-                        data: clusterSample.map(c => parseFloat(c['Memory Usage %'] || 0)),
-                        backgroundColor: 'rgba(168, 85, 247, 0.75)'
-                    }]
+                    datasets: [{ label: 'Avg CPU Load %', data: clusterSample.map(c => parseFloat(c['CPU Usage %'] || 0)), backgroundColor: 'rgba(99, 102, 241, 0.75)' }, { label: 'Avg Memory Load %', data: clusterSample.map(c => parseFloat(c['Memory Usage %'] || 0)), backgroundColor: 'rgba(168, 85, 247, 0.75)' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { max: 100, ticks: { color: '#64748b' } }, x: { ticks: { color: '#64748b' } } } }
             });
 
             const ctxDs = document.getElementById('datastoreChart').getContext('2d');
             if(dsChart) dsChart.destroy();
-
             const dsSample = datastores.slice(0, 6);
             dsChart = new Chart(ctxDs, {
                 type: 'doughnut',
                 data: {
                     labels: dsSample.map(d => d['Datastore Name'] || 'Storage Volume'),
-                    datasets: [{
-                        data: dsSample.map(d => parseFloat(d['Capacity (MiB)'] || 0) / 1024 / 1024),
-                        backgroundColor: ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444']
-                    }]
+                    datasets: [{ data: dsSample.map(d => parseFloat(d['Capacity (MiB)'] || 0) / 1024 / 1024), backgroundColor: ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } } }
             });
 
             const ctxOpt = document.getElementById('vmOptimizationChart').getContext('2d');
             if(optChart) optChart.destroy();
-
             let optimal = 0, oversized = 0, idle = 0;
             vms.forEach(v => {
                 if(v.state.toLowerCase().includes('off')) idle++;
                 else if(v.peakCpu95th < 20 && v.peakMem95th < 30) oversized++;
                 else optimal++;
             });
-
             optChart = new Chart(ctxOpt, {
                 type: 'polarArea',
                 data: {
                     labels: ['Optimized Execution', 'Oversized Allocation', 'Powered-Off / Idle'],
-                    datasets: [{
-                        data: [optimal, oversized, idle],
-                        backgroundColor: ['rgba(16, 185, 129, 0.65)', 'rgba(245, 158, 11, 0.65)', 'rgba(100, 116, 139, 0.65)']
-                    }]
+                    datasets: [{ data: [optimal, oversized, idle], backgroundColor: ['rgba(16, 185, 129, 0.65)', 'rgba(245, 158, 11, 0.65)', 'rgba(100, 116, 139, 0.65)'] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
             });
         }
 
         function renderSnapshotRiskRegister(snaps) {
-            const tbody = document.getElementById('snapshotTableBody');
-            tbody.innerHTML = '';
-            
-            if(snaps.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 italic">No historical snapshots flagged across primary arrays.</td></tr>`;
-                return;
-            }
-
+            const tbody = document.getElementById('snapshotTableBody'); tbody.innerHTML = '';
+            if(snaps.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 italic">No historical snapshots flagged.</td></tr>`; return; }
             snaps.slice(0, 20).forEach(s => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-900/40 transition-colors';
+                const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors';
                 const sizeMiB = parseFloat(s['Size MiB (total)'] || s['Size MiB (vmsn)'] || 0);
-                
-                tr.innerHTML = `
-                    <td class="p-2.5 font-medium text-slate-200">${s['VM Name'] || 'Unknown VM'}</td>
-                    <td class="p-2.5 text-slate-400 max-w-[200px] truncate">${s['Snapshot Name'] || 'Unnamed Checkpoint'}</td>
-                    <td class="p-2.5 text-right font-mono text-rose-400">${sizeMiB.toLocaleString(undefined, {maximumFractionDigits:1})} MiB</td>
-                `;
+                tr.innerHTML = `<td class="p-2.5 font-medium text-slate-200">${s['VM Name'] || 'Unknown VM'}</td><td class="p-2.5 text-slate-400 max-w-[200px] truncate">${s['Snapshot Name'] || 'Unnamed'}</td><td class="p-2.5 text-right font-mono text-rose-400">${sizeMiB.toLocaleString(undefined, {maximumFractionDigits:1})} MiB</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         function renderPhysicalFleetRegister(hosts) {
-            const tbody = document.getElementById('hostTableBody');
-            tbody.innerHTML = '';
-
+            const tbody = document.getElementById('hostTableBody'); tbody.innerHTML = '';
             hosts.slice(0, 20).forEach(h => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-slate-900/40 transition-colors';
-                
-                const cores = h['CPU Cores'] || h['Cores'] || '-';
-                const cpuCount = h['CPUs'] || '-';
-                const ramRaw = parseFloat(h['Memory Size'] || 0);
-                const ramString = ramRaw > 1024 ? `${(ramRaw / 1024).toFixed(0)} GB` : `${ramRaw} MB`;
+                const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors';
+                const cores = h['CPU Cores'] || h['Cores'] || '-'; const cpuCount = h['CPUs'] || '-';
+                const ramRaw = parseFloat(h['Memory Size'] || 0); const ramString = ramRaw > 1024 ? `${(ramRaw / 1024).toFixed(0)} GB` : `${ramRaw} MB`;
                 const gpuCount = parseInt(h['GPU Count'] || 0);
-
-                tr.innerHTML = `
-                    <td class="p-2.5 font-medium text-slate-300">${h['Host Name'] || h['Host IP'] || 'ESXi Node'}</td>
-                    <td class="p-2.5 text-slate-400">${h['Model'] || 'Whitebox Platform'}</td>
-                    <td class="p-2.5 text-center text-slate-400">${cores} c / ${cpuCount} p</td>
-                    <td class="p-2.5 text-right font-mono text-cyan-400">${ramString}</td>
-                    <td class="p-2.5 text-right font-semibold ${gpuCount > 0 ? 'text-amber-400' : 'text-slate-600'}">${gpuCount}</td>
-                `;
+                tr.innerHTML = `<td class="p-2.5 font-medium text-slate-300">${h['Host Name'] || h['Host IP'] || 'Node'}</td><td class="p-2.5 text-slate-400">${h['Model'] || 'Platform'}</td><td class="p-2.5 text-center text-slate-400">${cores} c / ${cpuCount} p</td><td class="p-2.5 text-right font-mono text-cyan-400">${ramString}</td><td class="p-2.5 text-right font-semibold ${gpuCount > 0 ? 'text-amber-400' : 'text-slate-600'}">${gpuCount}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         function renderWorkloadLedger(vms) {
-            const tbody = document.getElementById('vmTableBody');
-            const query = document.getElementById('vmSearch').value.toLowerCase();
-            tbody.innerHTML = '';
-
+            const tbody = document.getElementById('vmTableBody'); const query = document.getElementById('vmSearch').value.toLowerCase(); tbody.innerHTML = '';
             vms.forEach(v => {
                 if(query && !v.name.toLowerCase().includes(query) && !v.os.toLowerCase().includes(query)) return;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-900/50 transition border-b border-slate-900/40";
-                
-                const statusBadge = v.state.toLowerCase().includes('on') 
-                    ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>'
-                    : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
-
+                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/50 transition border-b border-slate-900/40";
+                const statusBadge = v.state.toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
                 const cpuClass = v.peakCpu95th > 80 ? 'text-rose-400 font-semibold' : v.peakCpu95th < 15 && !v.state.toLowerCase().includes('off') ? 'text-amber-400/80 font-medium' : 'text-slate-400';
                 const memClass = v.peakMem95th > 85 ? 'text-rose-400 font-semibold' : v.peakMem95th < 25 && !v.state.toLowerCase().includes('off') ? 'text-amber-400/80 font-medium' : 'text-slate-400';
-
-                tr.innerHTML = `
-                    <td class="px-6 py-3.5 font-bold text-slate-100">${v.name}</td>
-                    <td class="px-6 py-3.5">${statusBadge}</td>
-                    <td class="px-6 py-3.5 text-slate-400 truncate max-w-[180px]">${v.os}</td>
-                    <td class="px-6 py-3.5 text-center font-mono font-medium">${v.vcpus}</td>
-                    <td class="px-6 py-3.5 text-right font-mono">${v.ram >= 1024 ? `${(v.ram/1024).toFixed(1)} GB` : `${v.ram} MiB`}</td>
-                    <td class="px-6 py-3.5 text-right font-mono ${cpuClass}">${v.peakCpu95th > 0 ? v.peakCpu95th.toFixed(1) + '%' : '-'}</td>
-                    <td class="px-6 py-3.5 text-right font-mono ${memClass}">${v.peakMem95th > 0 ? v.peakMem95th.toFixed(1) + '%' : '-'}</td>
-                    <td class="px-6 py-3.5 text-right font-mono text-slate-400">${v.consumedStorage.toFixed(1)} GB</td>
-                `;
+                tr.innerHTML = `<td class="px-6 py-3.5 font-bold text-slate-100">${v.name}</td><td class="px-6 py-3.5">${statusBadge}</td><td class="px-6 py-3.5 text-slate-400 truncate max-w-[180px]">${v.os}</td><td class="px-6 py-3.5 text-center font-mono font-medium">${v.vcpus}</td><td class="px-6 py-3.5 text-right font-mono">${v.ram >= 1024 ? `${(v.ram/1024).toFixed(1)} GB` : `${v.ram} MiB`}</td><td class="px-6 py-3.5 text-right font-mono ${cpuClass}">${v.peakCpu95th > 0 ? v.peakCpu95th.toFixed(1) + '%' : '-'}</td><td class="px-6 py-3.5 text-right font-mono ${memClass}">${v.peakMem95th > 0 ? v.peakMem95th.toFixed(1) + '%' : '-'}</td><td class="px-6 py-3.5 text-right font-mono text-slate-400">${v.consumedStorage.toFixed(1)} GB</td>`;
                 tbody.appendChild(tr);
             });
         }
