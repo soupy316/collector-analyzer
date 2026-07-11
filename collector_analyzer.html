@@ -489,7 +489,6 @@
         }
 
         function processAndSaveVcenterSite(sheets, saveFileName) {
-            // CRASH-PROOF WRAPPER: If anything fails, it will tell you exactly what broke instead of silently dying!
             try {
                 const dcList = sheets['vdatacenter'] || [];
                 const clusterList = sheets['vcluster'] || [];
@@ -546,6 +545,25 @@
             }
         }
 
+        // RESTORED FUNCTION: Saving payload data onto filesystem path tree layers
+        async function writeSiteFileToDisk(saveFileName, payload) {
+            if(!activeProjectDirectoryHandle) return;
+            try {
+                const finalName = `${saveFileName}.json`;
+                const fileHandle = await activeProjectDirectoryHandle.getFileHandle(finalName, { create: true });
+                const writableStream = await fileHandle.createWritable();
+                await writableStream.write(JSON.stringify(payload, null, 2));
+                await writableStream.close();
+                
+                await scanAndRenderFileChips();
+                document.getElementById('txtLocationName').value = saveFileName.replace(/_/g, ' ');
+                alert(`Successfully saved collection record: /${activeProjectDirectoryHandle.name}/${finalName}`);
+            } catch (err) { 
+                console.error(err);
+                alert("Failed auto-committing local file record matrix: " + err.message); 
+            }
+        }
+
         function compileKpiPanels(dc, clusters, hosts, vms, gpus) {
             document.getElementById('kpiDC').innerText = dc;
             document.getElementById('kpiClusters').innerText = clusters;
@@ -553,7 +571,6 @@
             document.getElementById('kpiVMs').innerText = vms.length;
             document.getElementById('kpiGPUs').innerText = gpus;
             
-            // Hardened string parsing so blank cell inputs cannot crash the mapping logic
             const activeCount = vms.filter(v => String(v.state || '').toLowerCase().includes('on')).length;
             document.getElementById('kpiActiveVMs').innerText = activeCount;
         }
