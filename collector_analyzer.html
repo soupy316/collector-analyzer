@@ -15,7 +15,8 @@
     <header class="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST</div>
+                <!-- Incremented Tracking Version Number Marker Tag Added here -->
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.1</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
                     <p class="text-xs text-slate-400">Comprehensive Local Repository & 21-Tab Infrastructure Assessment Suite</p>
@@ -547,22 +548,13 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
-                
-                // Diagnostic tab mapping visualizer
-                const diagTabsList = document.getElementById('diagTabsList');
-                diagTabsList.innerHTML = '';
-                workbook.SheetNames.forEach(name => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `Tab Label: <span class="text-indigo-400 font-bold">"${name}"</span> <span class="text-[9px] text-slate-500">(Length: ${name.length} chars)</span>`;
-                    diagTabsList.appendChild(li);
-                });
-                
                 const parsedSheets = {};
+                
                 workbook.SheetNames.forEach(name => {
-                    parsedSheets[name] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
+                    parsedSheets[name.trim()] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
                 });
                 
-                // CRITICAL STRUCTURAL MATCH: Target the exact case-sensitive tab names from your workbook blueprint
+                // Case-sensitive exact target mapping configuration
                 parsedSheets['vmlist'] = parsedSheets['vmList'] || [];
                 parsedSheets['vdisk'] = parsedSheets['vDisk'] || [];
                 parsedSheets['vpartition'] = parsedSheets['vPartition'] || [];
@@ -571,7 +563,15 @@
                 parsedSheets['vhost'] = parsedSheets['vHosts'] || [];
                 parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || [];
 
-                // Diagnostic header visualizer
+                // Debug logs visual text updates
+                const diagTabsList = document.getElementById('diagTabsList');
+                diagTabsList.innerHTML = '';
+                workbook.SheetNames.forEach(name => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `Tab Label: <span class="text-indigo-400 font-bold">"${name}"</span> <span class="text-[9px] text-slate-500">(Length: ${name.length} chars)</span>`;
+                    diagTabsList.appendChild(li);
+                });
+                
                 const diagColumnsMap = document.getElementById('diagColumnsMap');
                 diagColumnsMap.innerHTML = '';
                 
@@ -613,22 +613,21 @@
                 let totalGPUs = 0;
                 hostList.forEach(h => { totalGPUs += Number(h['GPU Count'] || h['GPUCount'] || 0); });
 
-                // DYNAMIC LOOKUP MATRIX: Aggregates values based on the exact literal headers discovered by your diagnostics window
                 const vdiskAggregationMap = {};
                 vdiskTabList.forEach(d => {
-                    const vmName = d['VM Name'] || d['VM'] || d['Name'];
+                    const vmName = d['VM'] || d['VM Name'] || d['Name'];
                     if (vmName) {
-                        const diskMiB = parseFloat(d['Capacity (MiB)'] || 0);
+                        const diskMiB = parseFloat(d['Capacity MiB'] || d['Capacity (MiB)'] || d['Capacity'] || 0);
                         vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
                     }
                 });
 
                 const partConfigMap = {}, partConsumedMap = {};
                 partitionList.forEach(p => {
-                    const vmName = p['VM Name'] || p['VM'] || p['Name'];
+                    const vmName = p['VM'] || p['VM Name'] || p['Name'];
                     if (vmName) {
-                        const capMiB = parseFloat(p['Capacity (MiB)'] || 0);
-                        const consumedMiB = parseFloat(p['Consumed (MiB)'] || 0);
+                        const capMiB = parseFloat(p['Capacity MiB'] || p['Capacity (MiB)'] || p['Capacity'] || 0);
+                        const consumedMiB = parseFloat(p['Consumed MiB'] || p['Consumed (MiB)'] || p['Consumed'] || 0);
 
                         partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
                         partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
@@ -641,8 +640,7 @@
                     const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || 0);
                     const ramGB = ramMiB / 1024;
 
-                    // Match Excel: pulling final disk allocations straight out of your custom vDisk tab aggregation map array
-                    const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || 0);
+                    const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || vm['Provisioned (MiB)'] || 0);
                     const finalDiskMiB = vdiskAggregationMap[name] !== undefined ? vdiskAggregationMap[name] : fallbackDiskMiB;
 
                     return {
@@ -686,7 +684,7 @@
             if(!activeProjectDirectoryHandle) return;
             try {
                 const finalName = `${saveFileName}.json`;
-                const fileHandle = await activeProjectDirectoryHandle.getFileHandle(finalName, { create: true });
+                const fileHandle = await activeProjectDirectoryHandle.getDirectoryHandle && await activeProjectDirectoryHandle.getFileHandle(finalName, { create: true });
                 const writableStream = await fileHandle.createWritable();
                 await writableStream.write(JSON.stringify(payload, null, 2));
                 await writableStream.close();
