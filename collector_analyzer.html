@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>collector_analyzer | Enterprise Repository Suite</title>
-    <!-- Tailwind CSS v4 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- SheetJS (XLSX Parser) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-indigo-500 selection:text-white">
@@ -24,7 +21,6 @@
                 </div>
             </div>
             
-            <!-- File Input Upload -->
             <div id="uploadZone" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <input type="text" id="txtLocationName" placeholder="Saved Name (e.g., Stadium Cluster, Southside)..." class="px-3 py-2 bg-slate-900 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-medium w-full sm:w-80">
                 <label class="flex items-center justify-center gap-2.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl cursor-pointer transition-all text-sm font-medium shadow-lg shadow-indigo-600/10 group whitespace-nowrap">
@@ -38,7 +34,6 @@
 
     <main class="max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8">
         
-        <!-- Local Directory Workspace Control Bar -->
         <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 shadow-xl backdrop-blur-sm">
             <div class="flex items-center gap-4">
                 <div id="workspaceIndicator" class="w-3 h-3 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50 shrink-0"></div>
@@ -96,13 +91,11 @@
             </div>
         </div>
 
-        <!-- Available Collector Sub-Files Index Bar -->
         <div id="locationSelectorZone" class="hidden bg-slate-900/30 border border-slate-800/60 px-4 py-3 rounded-xl mb-6 items-center gap-4 overflow-x-auto">
             <span id="lblCustomerClusters" class="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Customer Clusters:</span>
             <div id="locationChipContainer" class="flex items-center gap-2"></div>
         </div>
 
-        <!-- Welcome Screen -->
         <div id="welcomeState" class="flex flex-col items-center justify-center border border-slate-800 bg-slate-900/10 rounded-2xl py-24 px-6 text-center my-8 shadow-xl max-w-2xl mx-auto">
             <div class="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-5 shadow-inner">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2zm5-2V3a1 1 0 011-1h6a1 1 0 011 1v2M5 7h14"/></svg>
@@ -111,9 +104,7 @@
             <p id="welcomeText" class="text-slate-400 text-sm leading-relaxed max-w-md">To get started, map your root database folder by choosing **Set Local Repository Path** above to manage multi-site assignments natively on disk.</p>
         </div>
 
-        <!-- Dashboard UI Workspace -->
         <div id="dashboardState" class="hidden space-y-6">
-            <!-- Global Inventory Rollup KPIs -->
             <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Datacenters</p><p id="kpiDC" class="text-2xl font-black mt-1 text-indigo-400">-</p></div>
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Clusters</p><p id="kpiClusters" class="text-2xl font-black mt-1 text-purple-400">-</p></div>
@@ -123,14 +114,11 @@
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active NVIDIA GPUs</p><p id="kpiGPUs" class="text-2xl font-black mt-1 text-amber-400">-</p></div>
             </div>
 
-            <!-- Charts Section -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Charts Section (Only Cluster Density remains, spans full width) -->
+            <div class="grid grid-cols-1 gap-6">
                 <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Cluster Host Workload Densities</h3><div class="relative flex-1 min-h-0"><canvas id="clusterDensityChart"></canvas></div></div>
-                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Datastore Capacity Profiles (TB)</h3><div class="relative flex-1 min-h-0"><canvas id="datastoreChart"></canvas></div></div>
-                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">VM Resource Optimization Analysis</h3><div class="relative flex-1 min-h-0"><canvas id="vmOptimizationChart"></canvas></div></div>
             </div>
 
-            <!-- Optimized Grid Block: Snapshot Footprint Alongside Extended Host Fleet Inventory Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4 lg:col-span-1">
                     <div><h3 class="text-sm font-bold text-slate-200">Active Storage Risks: Snapshot Footprint</h3><p class="text-xs text-slate-400">Orphaned checkpoints consuming block storage layers</p></div>
@@ -161,7 +149,6 @@
                 </div>
             </div>
 
-            <!-- Global Virtual Machine Right-Sizing Ledger -->
             <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 overflow-hidden shadow-2xl">
                 <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/20">
                     <div><h3 class="text-sm font-bold text-slate-200">Infrastructure Workload Ledger</h3></div>
@@ -187,7 +174,7 @@
         let currentLoadedFilesMap = {};
         let scannedCustomerFoldersList = [];
         
-        let densityChart = null, dsChart = null, optChart = null;
+        let densityChart = null;
         window.environmentCache = {};
 
         // DOM Triggers
@@ -287,7 +274,7 @@
             selectEl.innerHTML = '<option value="">-- Select Existing Customer --</option>';
 
             for await (const entry of rootDirectoryHandle.values()) {
-                if (entry.kind === 'directory') scannedCustomerFoldersList.push(entry.name);
+                if (entry.kind === 'directory' && !entry.name.startsWith('.')) scannedCustomerFoldersList.push(entry.name);
             }
 
             scannedCustomerFoldersList.sort().forEach(folderName => {
@@ -442,7 +429,7 @@
                 document.getElementById('dashboardState').classList.remove('hidden');
 
                 compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.gpus);
-                compileVisualCharts(stateObj.raw.clusters, stateObj.raw.datastores, window.environmentCache.vmRollup);
+                compileVisualCharts(stateObj.raw.clusters);
                 renderSnapshotRiskRegister(stateObj.raw.snaps);
                 renderPhysicalFleetRegister(stateObj.raw.hosts);
                 renderWorkloadLedger(window.environmentCache.vmRollup);
@@ -527,7 +514,7 @@
             document.getElementById('dashboardState').classList.remove('hidden');
 
             compileKpiPanels(dcList.length, clusterList.length, hostList.length, optimizedVmList, totalGPUs);
-            compileVisualCharts(clusterList, dsList, optimizedVmList);
+            compileVisualCharts(clusterList);
             renderSnapshotRiskRegister(snapList);
             renderPhysicalFleetRegister(hostList);
             renderWorkloadLedger(optimizedVmList);
@@ -552,7 +539,7 @@
             document.getElementById('kpiActiveVMs').innerText = activeCount;
         }
 
-        function compileVisualCharts(clusters, datastores, vms) {
+        function compileVisualCharts(clusters) {
             const ctxCluster = document.getElementById('clusterDensityChart').getContext('2d');
             if(densityChart) densityChart.destroy();
             const clusterSample = clusters.slice(0, 8);
@@ -563,35 +550,6 @@
                     datasets: [{ label: 'Avg CPU Load %', data: clusterSample.map(c => parseFloat(c['CPU Usage %'] || 0)), backgroundColor: 'rgba(99, 102, 241, 0.75)' }, { label: 'Avg Memory Load %', data: clusterSample.map(c => parseFloat(c['Memory Usage %'] || 0)), backgroundColor: 'rgba(168, 85, 247, 0.75)' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { max: 100, ticks: { color: '#64748b' } }, x: { ticks: { color: '#64748b' } } } }
-            });
-
-            const ctxDs = document.getElementById('datastoreChart').getContext('2d');
-            if(dsChart) dsChart.destroy();
-            const dsSample = datastores.slice(0, 6);
-            dsChart = new Chart(ctxDs, {
-                type: 'doughnut',
-                data: {
-                    labels: dsSample.map(d => d['Datastore Name'] || 'Volume'),
-                    datasets: [{ data: dsSample.map(d => parseFloat(d['Capacity (MiB)'] || 0) / 1024 / 1024), backgroundColor: ['#6366f1', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'] }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } } }
-            });
-
-            const ctxOpt = document.getElementById('vmOptimizationChart').getContext('2d');
-            if(optChart) optChart.destroy();
-            let optimal = 0, oversized = 0, idle = 0;
-            vms.forEach(v => {
-                if(v.state.toLowerCase().includes('off')) idle++;
-                else if(v.peakCpu95th < 20 && v.peakMem95th < 30) oversized++;
-                else optimal++;
-            });
-            optChart = new Chart(ctxOpt, {
-                type: 'polarArea',
-                data: {
-                    labels: ['Optimized Execution', 'Oversized Allocation', 'Powered-Off / Idle'],
-                    datasets: [{ data: [optimal, oversized, idle], backgroundColor: ['rgba(16, 185, 129, 0.65)', 'rgba(245, 158, 11, 0.65)', 'rgba(100, 116, 139, 0.65)'] }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
             });
         }
 
@@ -617,7 +575,6 @@
                 const hwModel = h['Model'] || h['Hardware Model'] || '-';
                 const cpuModel = h['CPU Model'] || h['Processor Type'] || h['Processor Model'] || '-';
                 
-                // FIXED CALCULATION: Extracted the raw speed and cleanly divided it by 1000 to convert from MHz to GHz decimals
                 const cpuSpeedRaw = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || h['CPU Speed MHz'] || 0);
                 const cpuSpeedStr = cpuSpeedRaw > 0 ? `${(cpuSpeedRaw / 1000).toFixed(2)} GHz` : '-';
                 
