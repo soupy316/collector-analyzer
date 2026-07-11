@@ -548,7 +548,7 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
                 
-                // DIAGNOSTIC 1 OUT: Map out every single tab discovered inside the workbook onto your screens
+                // Diagnostic tab mapping visualizer
                 const diagTabsList = document.getElementById('diagTabsList');
                 diagTabsList.innerHTML = '';
                 workbook.SheetNames.forEach(name => {
@@ -558,29 +558,20 @@
                 });
                 
                 const parsedSheets = {};
-                let foundVDiskKey = '', foundVPartKey = '', foundVInfoKey = '';
-                
-                // Fuzzy interceptor logic loops
-                workbook.SheetNames.forEach(rawName => {
-                    const lowerName = rawName.trim().toLowerCase();
-                    const rowData = XLSX.utils.sheet_to_json(workbook.Sheets[rawName]);
-                    parsedSheets[rawName] = rowData;
-                    
-                    if (lowerName === 'vdisk') foundVDiskKey = rawName;
-                    if (lowerName === 'vpartition') foundVPartKey = rawName;
-                    if (lowerName === 'vmlist' || lowerName === 'vmlist' || lowerName === 'vinfo') foundVInfoKey = rawName;
+                workbook.SheetNames.forEach(name => {
+                    parsedSheets[name] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
                 });
                 
-                // Bind properties with strict lookup selectors
-                parsedSheets['vdisk'] = parsedSheets[foundVDiskKey] || parsedSheets['vDisk'] || parsedSheets['vdisk'] || [];
-                parsedSheets['vpartition'] = parsedSheets[foundVPartKey] || parsedSheets['vPartition'] || parsedSheets['vpartition'] || [];
-                parsedSheets['vmlist'] = parsedSheets[foundVInfoKey] || parsedSheets['vmList'] || parsedSheets['vmlist'] || [];
-                parsedSheets['vdatacenter'] = parsedSheets['vDatacenter'] || parsedSheets['vdatacenter'] || [];
-                parsedSheets['vcluster'] = parsedSheets['vCluster'] || parsedSheets['vcluster'] || [];
-                parsedSheets['vhost'] = sheets => sheets['vHost'] || sheets['vhost'] || sheets['vhosts'] || [];
-                parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || parsedSheets['vsnapshot'] || [];
+                // CRITICAL STRUCTURAL MATCH: Target the exact case-sensitive tab names from your workbook blueprint
+                parsedSheets['vmlist'] = parsedSheets['vmList'] || [];
+                parsedSheets['vdisk'] = parsedSheets['vDisk'] || [];
+                parsedSheets['vpartition'] = parsedSheets['vPartition'] || [];
+                parsedSheets['vdatacenter'] = parsedSheets['vDataCenter'] || [];
+                parsedSheets['vcluster'] = parsedSheets['vCluster'] || [];
+                parsedSheets['vhost'] = parsedSheets['vHosts'] || [];
+                parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || [];
 
-                // DIAGNOSTIC 2 OUT: Print row 1 headers onto console card viewports
+                // Diagnostic header visualizer
                 const diagColumnsMap = document.getElementById('diagColumnsMap');
                 diagColumnsMap.innerHTML = '';
                 
@@ -592,16 +583,15 @@
                         diagColumnsMap.appendChild(div);
                     } else {
                         const div = document.createElement('div');
-                        div.innerHTML = `<span class="text-rose-400 font-bold">${label}:</span> <span class="text-rose-500/80 italic">Not found or completely empty array list.</span>`;
+                        div.innerHTML = `<span class="text-rose-400 font-bold">${label}:</span> <span class="text-rose-500/80 italic">Not found. Check tab names.</span>`;
                         diagColumnsMap.appendChild(div);
                     }
                 };
 
-                renderHeadersDiag('vmList / vMList Rows', parsedSheets['vmlist']);
+                renderHeadersDiag('vmList Rows', parsedSheets['vmlist']);
                 renderHeadersDiag('vDisk Rows', parsedSheets['vdisk']);
                 renderHeadersDiag('vPartition Rows', parsedSheets['vpartition']);
                 
-                // Expose diagnostics panel grid block
                 document.getElementById('diagnosticConsole').classList.remove('hidden');
                 document.getElementById('diagnosticConsole').classList.add('flex');
 
@@ -621,36 +611,29 @@
                 const vdiskTabList = sheets['vdisk'] || [];
 
                 let totalGPUs = 0;
-                if (Array.isArray(hostList)) {
-                    hostList.forEach(h => { totalGPUs += Number(h['GPU Count'] || h['GPUCount'] || 0); });
-                }
+                hostList.forEach(h => { totalGPUs += Number(h['GPU Count'] || h['GPUCount'] || 0); });
 
-                // SUMIF 1: Aggregate vDisk Tab metrics
+                // DYNAMIC LOOKUP MATRIX: Aggregates values based on the exact literal headers discovered by your diagnostics window
                 const vdiskAggregationMap = {};
-                if (Array.isArray(vdiskTabList)) {
-                    vdiskTabList.forEach(d => {
-                        const vmName = d['VM'] || d['VM Name'] || d['Name'];
-                        if (vmName) {
-                            const diskMiB = parseFloat(d['Capacity MiB'] || d['Capacity (MiB)'] || d['Capacity'] || 0);
-                            vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
-                        }
-                    });
-                }
+                vdiskTabList.forEach(d => {
+                    const vmName = d['VM Name'] || d['VM'] || d['Name'];
+                    if (vmName) {
+                        const diskMiB = parseFloat(d['Capacity (MiB)'] || 0);
+                        vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
+                    }
+                });
 
-                // SUMIF 2: Aggregate vPartition Tab metrics
                 const partConfigMap = {}, partConsumedMap = {};
-                if (Array.isArray(partitionList)) {
-                    partitionList.forEach(p => {
-                        const vmName = p['VM'] || p['VM Name'] || p['Name'];
-                        if (vmName) {
-                            const capMiB = parseFloat(p['Capacity MiB'] || p['Capacity (MiB)'] || p['Capacity'] || 0);
-                            const consumedMiB = parseFloat(p['Consumed MiB'] || p['Consumed (MiB)'] || p['Consumed'] || 0);
+                partitionList.forEach(p => {
+                    const vmName = p['VM Name'] || p['VM'] || p['Name'];
+                    if (vmName) {
+                        const capMiB = parseFloat(p['Capacity (MiB)'] || 0);
+                        const consumedMiB = parseFloat(p['Consumed (MiB)'] || 0);
 
-                            partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
-                            partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
-                        }
-                    });
-                }
+                        partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
+                        partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
+                    }
+                });
 
                 const optimizedVmList = vmListTab.map(vm => {
                     const name = vm['VM Name'] || vm['VM'] || vm['Name'];
@@ -658,7 +641,8 @@
                     const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || 0);
                     const ramGB = ramMiB / 1024;
 
-                    const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || vm['Provisioned (MiB)'] || 0);
+                    // Match Excel: pulling final disk allocations straight out of your custom vDisk tab aggregation map array
+                    const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || 0);
                     const finalDiskMiB = vdiskAggregationMap[name] !== undefined ? vdiskAggregationMap[name] : fallbackDiskMiB;
 
                     return {
@@ -797,7 +781,6 @@
                 if(query && !v.name.toLowerCase().includes(query) && !v.os.toLowerCase().includes(query)) return;
                 const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/50 transition border-b border-slate-900/40 font-medium text-slate-300";
                 const statusBadge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
-                const cpuClass = v.peakCpu95th > 80 ? 'text-rose-400 font-bold' : v.peakCpu95th < 15 && !String(v.state || '').toLowerCase().includes('off') ? 'text-amber-400/80' : 'text-slate-400';
                 
                 const vdiskCapGB = v.vdiskCapMiB / 1024;
                 const pConfigGB = v.partitionConfigMiB / 1024;
@@ -811,7 +794,7 @@
                     <td class="px-6 py-3.5">${statusBadge}</td>
                     <td class="px-6 py-3.5 text-center font-mono">${v.vcpus}</td>
                     <td class="px-6 py-3.5 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)}</td>
-                    <td class="px-6 py-3.5 text-right font-mono ${cpuClass}">${v.peakCpu95th > 0 ? v.peakCpu95th.toFixed(1) + '%' : '-'}</td>
+                    <td class="px-6 py-3.5 text-right font-mono text-slate-400">-</td>
                     <td class="px-6 py-3.5 text-right font-mono text-purple-400">${vdiskCapGB.toFixed(1)}</td>
                     <td class="px-6 py-3.5 text-right font-mono text-slate-400">${vpartConfigStr}</td>
                     <td class="px-6 py-3.5 text-right font-mono text-slate-400">${vpartConsumedStr}</td>
