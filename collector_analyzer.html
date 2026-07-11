@@ -546,9 +546,9 @@
                 const dsList = sheets['datastore'] || [];
                 const vmListTab = sheets['vmlist'] || sheets['vinfo'] || [];
                 const vcpuList = sheets['vcpu'] || [];
-                const vmemList = sheets['vmemory'] || [];
                 const snapList = sheets['vsnapshot'] || [];
                 const partitionList = sheets['vpartition'] || sheets['vpartitions'] || [];
+                const vdiskTabList = sheets['vdisk'] || sheets['vdisks'] || [];
 
                 let totalGPUs = 0;
                 hostList.forEach(h => { totalGPUs += Number(h['GPU Count']) || 0; });
@@ -556,26 +556,28 @@
                 const cpuProfileMap = {};
                 vcpuList.forEach(v => { if(v['VM Name']) cpuProfileMap[v['VM Name']] = parseFloat(v['95th Percentile % (recommended)'] || v['Peak %'] || v['Average %'] || 0) || 0; });
 
-                // MULTI-VARIATE COLUMN PARSER: Hardened to search for any common naming conventions of Capacity and Free space inside the vPartition tab
+                // RULE 1 MATCH: Group and execute SUMIF against Column C 'Capacity (MiB)' inside vDisk tab explicitly
+                const vdiskAggregationMap = {};
+                vdiskTabList.forEach(d => {
+                    const vmName = d['VM Name'] || d['VM'] || d['Name'];
+                    if (vmName) {
+                        const diskMiB = parseFloat(d['Capacity (MiB)'] || d['Capacity'] || d['Size (MiB)'] || d['Size'] || 0);
+                        vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
+                    }
+                });
+
+                // RULE 2 MATCH: Map Partition Configured to Column E and Partition Used to Column D
                 const partConfigMap = {}, partConsumedMap = {};
                 partitionList.forEach(p => {
                     const vmName = p['VM Name'] || p['VM'] || p['Name'];
                     if (vmName) {
-                        const capMiB = parseFloat(p['Capacity (MiB)'] || p['Capacity'] || p['Size (MiB)'] || p['Size'] || p['Capacity MiB'] || 0);
-                        
-                        // Look for any free space fields
-                        const freeMiB = parseFloat(p['Free Space (MiB)'] || p['Free Space'] || p['Free (MiB)'] || p['Free Space MiB'] || p['FreeSpace'] || 0);
-                        
-                        // Look explicitly for any direct pre-calculated consumption columns first
-                        let consumedMiB = parseFloat(p['Consumed (MiB)'] || p['Consumed'] || p['Used (MiB)'] || p['Used'] || p['Consumed MiB'] || p['Used Space'] || 0);
-                        
-                        // CRASH RESILIENT FALLBACK: If no explicit consumption column exists but Free Space is found, calculate the delta math natively
-                        if (consumedMiB === 0 && freeMiB > 0 && capMiB > freeMiB) {
-                            consumedMiB = capMiB - freeMiB;
-                        }
+                        // Configured maps to Column E 'Capacity (MiB)'
+                        const capMiB = parseFloat(p['Capacity (MiB)'] || p['Capacity'] || 0);
+                        // Used maps to Column D 'Consumed (MiB)'
+                        const consumedMiB = parseFloat(p['Consumed (MiB)'] || p['Consumed'] || p['Used (MiB)'] || p['Used'] || 0);
 
-                        partConfigMap[vmName] = (partConfigMap[vmName] || 0) + (capMiB / 1024);
-                        partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + (consumedMiB / 1024);
+                        partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
+                        partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
                     }
                 });
 
@@ -585,8 +587,9 @@
                     const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || 0);
                     const ramGB = ramMiB / 1024;
 
-                    const vdiskCapacityMiB = parseFloat(vm['Capacity (MiB)'] || vm['Provisioned (MiB)'] || vm['Provisioned Space'] || 0);
-                    const vdiskCapacityGB = vdiskCapacityMiB / 1024;
+                    // Fallback to primary sheet parameters only if the explicit vDisk tab reference is completely empty
+                    const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || vm['Provisioned (MiB)'] || 0);
+                    const finalDiskMiB = vdiskAggregationMap[name] !== undefined ? vdiskAggregationMap[name] : fallbackDiskMiB;
 
                     return {
                         name: name || 'Unknown Asset',
@@ -594,10 +597,10 @@
                         os: vm['Guest OS'] || vm['Guest Operating System'] || vm['OS'] || 'Other',
                         vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || 0),
                         ramGB: ramGB,
-                        vdiskCapGB: vdiskCapacityGB,
+                        vdiskCapMiB: finalDiskMiB,
                         peakCpu95th: cpuProfileMap[name] || 0,
-                        partitionConfigGB: partConfigMap[name] || 0,
-                        partitionConsumedGB: partConsumedMap[name] || 0
+                        partitionConfigMiB: partConfigMap[name] || 0,
+                        partitionConsumedMiB: partConsumedMap[name] || 0
                     };
                 });
 
@@ -653,29 +656,24 @@
             document.getElementById('kpiActiveVMs').innerText = runningVMs.length;
 
             const summaries = {
-                all: { count: vms.length, vcpu: 0, mem: 0, disk: 0, partCfg: 0, partUsed: 0 },
-                on:  { count: runningVMs.length, vcpu: 0, mem: 0, disk: 0, partCfg: 0, partUsed: 0 },
-                off: { count: stoppedVMs.length, vcpu: 0, mem: 0, disk: 0, partCfg: 0, partUsed: 0 }
+                all: { count: vms.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 },
+                on:  { count: runningVMs.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 },
+                off: { count: stoppedVMs.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 }
             };
 
             vms.forEach(v => {
                 const isRunning = String(v.state || '').toLowerCase().includes('on');
                 const targetCard = isRunning ? summaries.on : summaries.off;
                 
-                const ramVal = v.ramGB || 0;
-                const diskVal = v.vdiskCapGB || 0;
-                const pCfg = v.partitionConfigGB || 0;
-                const pUsed = v.partitionConsumedGB || 0;
-
-                summaries.all.vcpu += v.vcpus || 0; summaries.all.mem += ramVal; summaries.all.disk += diskVal; summaries.all.partCfg += pCfg; summaries.all.partUsed += pUsed;
-                targetCard.vcpu += v.vcpus || 0; targetCard.mem += ramVal; targetCard.disk += diskVal; targetCard.partCfg += pCfg; targetCard.partUsed += pUsed;
+                summaries.all.vcpu += v.vcpus || 0; summaries.all.mem += v.ramGB || 0; summaries.all.diskMiB += v.vdiskCapMiB || 0; summaries.all.partCfgMiB += v.partitionConfigMiB || 0; summaries.all.partUsedMiB += v.partitionConsumedMiB || 0;
+                targetCard.vcpu += v.vcpus || 0; targetCard.mem += v.ramGB || 0; targetCard.diskMiB += v.vdiskCapMiB || 0; targetCard.partCfgMiB += v.partitionConfigMiB || 0; targetCard.partUsedMiB += v.partitionConsumedMiB || 0;
             });
 
-            // PRESENTATION CONVERSION: Math scales sizes accurately to Terabytes (divided by 1024) and stamps proper labels
+            // ACCURATE SUMIF EXCEL MULTIPLIER: Divide total aggregated MiB properties by 1,048,576 to yield clean Terabytes (TB)
             const injectCardData = (prefix, data) => {
-                const diskTB = data.disk / 1024;
-                const partCfgTB = data.partCfg / 1024;
-                const partUsedTB = data.partUsed / 1024;
+                const diskTB = data.diskMiB / 1024 / 1024;
+                const partCfgTB = data.partCfgMiB / 1024 / 1024;
+                const partUsedTB = data.partUsedMiB / 1024 / 1024;
 
                 document.getElementById(`sum${prefix}Count`).innerText = data.count.toLocaleString();
                 document.getElementById(`sum${prefix}Vcpu`).innerText = data.vcpu.toLocaleString();
@@ -732,20 +730,21 @@
                 const statusBadge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
                 const cpuClass = v.peakCpu95th > 80 ? 'text-rose-400 font-bold' : v.peakCpu95th < 15 && !String(v.state || '').toLowerCase().includes('off') ? 'text-amber-400/80' : 'text-slate-400';
                 
-                const ramGBVal = v.ramGB || 0;
-                const vdiskCapVal = v.vdiskCapGB || 0;
-                const pConfig = v.partitionConfigGB || 0; const pConsumed = v.partitionConsumedGB || 0;
+                // Ledger conversions map to standard GB units (divided by 1024)
+                const vdiskCapGB = v.vdiskCapMiB / 1024;
+                const pConfigGB = v.partitionConfigMiB / 1024;
+                const pConsumedGB = v.partitionConsumedMiB / 1024;
 
-                const vpartConfigStr = pConfig > 0 ? `${pConfig.toFixed(1)}` : '-';
-                const vpartConsumedStr = pConsumed > 0 ? `${pConsumed.toFixed(1)}` : '-';
+                const vpartConfigStr = pConfigGB > 0 ? `${pConfigGB.toFixed(1)}` : '-';
+                const vpartConsumedStr = pConsumedGB > 0 ? `${pConsumedGB.toFixed(1)}` : '-';
 
                 tr.innerHTML = `
                     <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
                     <td class="px-6 py-3.5">${statusBadge}</td>
                     <td class="px-6 py-3.5 text-center font-mono">${v.vcpus}</td>
-                    <td class="px-6 py-3.5 text-right font-mono text-cyan-400">${ramGBVal.toFixed(1)}</td>
+                    <td class="px-6 py-3.5 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)}</td>
                     <td class="px-6 py-3.5 text-right font-mono ${cpuClass}">${v.peakCpu95th > 0 ? v.peakCpu95th.toFixed(1) + '%' : '-'}</td>
-                    <td class="px-6 py-3.5 text-right font-mono text-purple-400">${vdiskCapVal.toFixed(1)}</td>
+                    <td class="px-6 py-3.5 text-right font-mono text-purple-400">${vdiskCapGB.toFixed(1)}</td>
                     <td class="px-6 py-3.5 text-right font-mono text-slate-400">${vpartConfigStr}</td>
                     <td class="px-6 py-3.5 text-right font-mono text-slate-400">${vpartConsumedStr}</td>
                     <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
