@@ -556,13 +556,23 @@
                 const cpuProfileMap = {};
                 vcpuList.forEach(v => { if(v['VM Name']) cpuProfileMap[v['VM Name']] = parseFloat(v['95th Percentile % (recommended)'] || v['Peak %'] || v['Average %'] || 0) || 0; });
 
-                // CONFIGURATION REFINEMENT: Pull and sum both 'Capacity (MiB)' and 'Consumed (MiB)' columns per VM name
+                // MULTI-VARIATE COLUMN PARSER: Hardened to search for any common naming conventions of Capacity and Free space inside the vPartition tab
                 const partConfigMap = {}, partConsumedMap = {};
                 partitionList.forEach(p => {
                     const vmName = p['VM Name'] || p['VM'] || p['Name'];
                     if (vmName) {
-                        const capMiB = parseFloat(p['Capacity (MiB)'] || p['Capacity'] || p['Size (MiB)'] || p['Size'] || 0);
-                        const consumedMiB = parseFloat(p['Consumed (MiB)'] || p['Consumed'] || p['Used (MiB)'] || p['Used'] || 0);
+                        const capMiB = parseFloat(p['Capacity (MiB)'] || p['Capacity'] || p['Size (MiB)'] || p['Size'] || p['Capacity MiB'] || 0);
+                        
+                        // Look for any free space fields
+                        const freeMiB = parseFloat(p['Free Space (MiB)'] || p['Free Space'] || p['Free (MiB)'] || p['Free Space MiB'] || p['FreeSpace'] || 0);
+                        
+                        // Look explicitly for any direct pre-calculated consumption columns first
+                        let consumedMiB = parseFloat(p['Consumed (MiB)'] || p['Consumed'] || p['Used (MiB)'] || p['Used'] || p['Consumed MiB'] || p['Used Space'] || 0);
+                        
+                        // CRASH RESILIENT FALLBACK: If no explicit consumption column exists but Free Space is found, calculate the delta math natively
+                        if (consumedMiB === 0 && freeMiB > 0 && capMiB > freeMiB) {
+                            consumedMiB = capMiB - freeMiB;
+                        }
 
                         partConfigMap[vmName] = (partConfigMap[vmName] || 0) + (capMiB / 1024);
                         partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + (consumedMiB / 1024);
@@ -652,8 +662,8 @@
                 const isRunning = String(v.state || '').toLowerCase().includes('on');
                 const targetCard = isRunning ? summaries.on : summaries.off;
                 
-                const ramVal = v.ramGB || (parseFloat(v.ram || 0) / 1024);
-                const diskVal = v.vdiskCapGB || parseFloat(v.consumedStorage || 0);
+                const ramVal = v.ramGB || 0;
+                const diskVal = v.vdiskCapGB || 0;
                 const pCfg = v.partitionConfigGB || 0;
                 const pUsed = v.partitionConsumedGB || 0;
 
@@ -661,7 +671,7 @@
                 targetCard.vcpu += v.vcpus || 0; targetCard.mem += ramVal; targetCard.disk += diskVal; targetCard.partCfg += pCfg; targetCard.partUsed += pUsed;
             });
 
-            // SCALING REVOLUTION: Convert disk/partition values into Terabytes (divided by 1024) and inject static labels
+            // PRESENTATION CONVERSION: Math scales sizes accurately to Terabytes (divided by 1024) and stamps proper labels
             const injectCardData = (prefix, data) => {
                 const diskTB = data.disk / 1024;
                 const partCfgTB = data.partCfg / 1024;
@@ -671,8 +681,8 @@
                 document.getElementById(`sum${prefix}Vcpu`).innerText = data.vcpu.toLocaleString();
                 document.getElementById(`sum${prefix}Mem`).innerText  = data.mem.toLocaleString(undefined, {maximumFractionDigits:1}) + " GB";
                 document.getElementById(`sum${prefix}Disk`).innerText = diskTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB";
-                document.getElementById(`sum${prefix}PartCfg`).innerText  = partCfgTB > 0 ? partCfgTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '-';
-                document.getElementById(`sum${prefix}PartUsed`).innerText = partUsedTB > 0 ? partUsedTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '-';
+                document.getElementById(`sum${prefix}PartCfg`).innerText  = partCfgTB > 0 ? partCfgTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '0.00 TB';
+                document.getElementById(`sum${prefix}PartUsed`).innerText = partUsedTB > 0 ? partUsedTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '0.00 TB';
             };
 
             injectCardData('All', summaries.all); injectCardData('On', summaries.on); injectCardData('Off', summaries.off);
@@ -722,8 +732,8 @@
                 const statusBadge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
                 const cpuClass = v.peakCpu95th > 80 ? 'text-rose-400 font-bold' : v.peakCpu95th < 15 && !String(v.state || '').toLowerCase().includes('off') ? 'text-amber-400/80' : 'text-slate-400';
                 
-                const ramGBVal = v.ramGB || (parseFloat(v.ram || 0) / 1024);
-                const vdiskCapVal = v.vdiskCapGB || parseFloat(v.consumedStorage || 0);
+                const ramGBVal = v.ramGB || 0;
+                const vdiskCapVal = v.vdiskCapGB || 0;
                 const pConfig = v.partitionConfigGB || 0; const pConsumed = v.partitionConsumedGB || 0;
 
                 const vpartConfigStr = pConfig > 0 ? `${pConfig.toFixed(1)}` : '-';
