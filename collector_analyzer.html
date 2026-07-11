@@ -529,28 +529,22 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
-                
                 const parsedSheets = {};
-                let foundVDiskKey = 'vdisk', foundVPartKey = 'vpartition', foundVInfoKey = 'vmlist';
                 
+                // EXACT CASE MATCH DIAL-IN: Binds lookup algorithms to precise string layout representations
                 workbook.SheetNames.forEach(rawName => {
-                    const lowerName = rawName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const rowData = XLSX.utils.sheet_to_json(workbook.Sheets[rawName]);
-                    
-                    if (lowerName === 'vdisk') { foundVDiskKey = rawName; }
-                    else if (lowerName === 'vpartition') { foundVPartKey = rawName; }
-                    else if (lowerName === 'vmlist' || lowerName === 'vinfo') { foundVInfoKey = rawName; }
-                    
-                    parsedSheets[rawName.trim().toLowerCase()] = rowData;
+                    const cleanName = rawName.trim();
+                    parsedSheets[cleanName] = XLSX.utils.sheet_to_json(workbook.Sheets[rawName]);
                 });
-                
-                parsedSheets['vdisk'] = parsedSheets[foundVDiskKey.toLowerCase()] || [];
-                parsedSheets['vpartition'] = parsedSheets[foundVPartKey.toLowerCase()] || [];
-                parsedSheets['vmlist'] = parsedSheets[foundVInfoKey.toLowerCase()] || [];
-                parsedSheets['vdatacenter'] = parsedSheets['vdatacenter'] || [];
-                parsedSheets['vcluster'] = parsedSheets['vcluster'] || [];
-                parsedSheets['vhost'] = parsedSheets['vhost'] || parsedSheets['vhosts'] || [];
-                parsedSheets['vsnapshot'] = parsedSheets['vsnapshot'] || [];
+
+                // Standardize keys dynamically with fallback options to accommodate variations
+                parsedSheets['vmlist'] = parsedSheets['vmList'] || parsedSheets['vmlist'] || parsedSheets['vInfo'] || parsedSheets['vinfo'] || [];
+                parsedSheets['vdisk'] = parsedSheets['vDisk'] || parsedSheets['vdisk'] || [];
+                parsedSheets['vpartition'] = parsedSheets['vPartition'] || parsedSheets['vpartition'] || [];
+                parsedSheets['vdatacenter'] = parsedSheets['vDatacenter'] || parsedSheets['vdatacenter'] || [];
+                parsedSheets['vcluster'] = parsedSheets['vCluster'] || parsedSheets['vcluster'] || [];
+                parsedSheets['vhost'] = parsedSheets['vHost'] || parsedSheets['vhosts'] || parsedSheets['vhost'] || [];
+                parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || parsedSheets['vsnapshot'] || [];
 
                 processAndSaveVcenterSite(parsedSheets, storageKey);
             };
@@ -559,18 +553,18 @@
 
         function processAndSaveVcenterSite(sheets, saveFileName) {
             try {
-                const dcList = sheets['vdatacenter'] || [];
-                const clusterList = sheets['vcluster'] || [];
-                const hostList = sheets['vhost'] || [];
-                const vmListTab = sheets['vmlist'] || [];
-                const snapList = sheets['vsnapshot'] || [];
-                const partitionList = sheets['vpartition'] || [];
-                const vdiskTabList = sheets['vdisk'] || [];
+                const dcList = sheets['vdatacenter'];
+                const clusterList = sheets['vcluster'];
+                const hostList = sheets['vhost'];
+                const vmListTab = sheets['vmlist'];
+                const snapList = sheets['vsnapshot'];
+                const partitionList = sheets['vpartition'];
+                const vdiskTabList = sheets['vdisk'];
 
                 let totalGPUs = 0;
                 hostList.forEach(h => { totalGPUs += Number(h['GPU Count'] || h['GPUCount'] || 0); });
 
-                // STRICT RVTOOLS COLUMN HEADER DIAL-IN: Matches your exact Excel SUMIF rules mapping definitions
+                // SUMIF 1 ENGINE: Direct column matrix alignment for vDisk lookups
                 const vdiskAggregationMap = {};
                 vdiskTabList.forEach(d => {
                     const vmName = d['VM'] || d['VM Name'] || d['Name'];
@@ -580,13 +574,12 @@
                     }
                 });
 
+                // SUMIF 2 ENGINE: Partition configured mapping to column E and Used mapping to column D
                 const partConfigMap = {}, partConsumedMap = {};
                 partitionList.forEach(p => {
                     const vmName = p['VM'] || p['VM Name'] || p['Name'];
                     if (vmName) {
-                        // Configured maps to Column E header 'Capacity MiB'
                         const capMiB = parseFloat(p['Capacity MiB'] || p['Capacity (MiB)'] || p['Capacity'] || 0);
-                        // Consumed maps to Column D header 'Consumed MiB'
                         const consumedMiB = parseFloat(p['Consumed MiB'] || p['Consumed (MiB)'] || p['Consumed'] || 0);
 
                         partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
@@ -605,7 +598,7 @@
 
                     return {
                         name: name || 'Unknown Asset',
-                        state: vm['Power State'] || vm['Powerstate'] || 'Unknown',
+                        state: vm['Power State'] || vm['Powerstate'] || vm['State'] || 'Unknown',
                         os: vm['Guest OS'] || vm['Guest Operating System'] || vm['OS'] || 'Other',
                         vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || 0),
                         ramGB: ramGB,
