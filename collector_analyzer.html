@@ -94,6 +94,24 @@
             </div>
         </div>
 
+        <!-- Diagnostic Debugging Window Component Layer -->
+        <div id="diagnosticConsole" class="bg-slate-900/90 border border-amber-500/20 p-4 rounded-xl mb-6 hidden flex-col font-mono text-[11px] leading-relaxed shadow-lg">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2 text-amber-400/90 font-bold uppercase tracking-wider">
+                <span>🔍 Spreadsheet Blueprint Diagnostician Suite</span>
+                <span class="text-[9px] bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded text-amber-300">Live Workspace Interceptor</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <span class="text-slate-400 font-bold">Workbook Tabs Cataloged on Load:</span>
+                    <ul id="diagTabsList" class="list-disc pl-4 mt-1 text-slate-300 space-y-0.5"></ul>
+                </div>
+                <div>
+                    <span class="text-slate-400 font-bold">Detected Column Keys mapping vectors:</span>
+                    <div id="diagColumnsMap" class="mt-1 space-y-2 text-slate-300"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- Available Collector Sub-Files Index Bar -->
         <div id="locationSelectorZone" class="hidden bg-slate-900/30 border border-slate-800/60 px-4 py-3 rounded-xl mb-6 items-center gap-4 overflow-x-auto">
             <span id="lblCustomerClusters" class="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Customer Clusters:</span>
@@ -529,22 +547,63 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
-                const parsedSheets = {};
                 
-                // EXACT CASE MATCH DIAL-IN: Binds lookup algorithms to precise string layout representations
-                workbook.SheetNames.forEach(rawName => {
-                    const cleanName = rawName.trim();
-                    parsedSheets[cleanName] = XLSX.utils.sheet_to_json(workbook.Sheets[rawName]);
+                // DIAGNOSTIC 1 OUT: Map out every single tab discovered inside the workbook onto your screens
+                const diagTabsList = document.getElementById('diagTabsList');
+                diagTabsList.innerHTML = '';
+                workbook.SheetNames.forEach(name => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `Tab Label: <span class="text-indigo-400 font-bold">"${name}"</span> <span class="text-[9px] text-slate-500">(Length: ${name.length} chars)</span>`;
+                    diagTabsList.appendChild(li);
                 });
-
-                // Standardize keys dynamically with fallback options to accommodate variations
-                parsedSheets['vmlist'] = parsedSheets['vmList'] || parsedSheets['vmlist'] || parsedSheets['vInfo'] || parsedSheets['vinfo'] || [];
-                parsedSheets['vdisk'] = parsedSheets['vDisk'] || parsedSheets['vdisk'] || [];
-                parsedSheets['vpartition'] = parsedSheets['vPartition'] || parsedSheets['vpartition'] || [];
+                
+                const parsedSheets = {};
+                let foundVDiskKey = '', foundVPartKey = '', foundVInfoKey = '';
+                
+                // Fuzzy interceptor logic loops
+                workbook.SheetNames.forEach(rawName => {
+                    const lowerName = rawName.trim().toLowerCase();
+                    const rowData = XLSX.utils.sheet_to_json(workbook.Sheets[rawName]);
+                    parsedSheets[rawName] = rowData;
+                    
+                    if (lowerName === 'vdisk') foundVDiskKey = rawName;
+                    if (lowerName === 'vpartition') foundVPartKey = rawName;
+                    if (lowerName === 'vmlist' || lowerName === 'vmlist' || lowerName === 'vinfo') foundVInfoKey = rawName;
+                });
+                
+                // Bind properties with strict lookup selectors
+                parsedSheets['vdisk'] = parsedSheets[foundVDiskKey] || parsedSheets['vDisk'] || parsedSheets['vdisk'] || [];
+                parsedSheets['vpartition'] = parsedSheets[foundVPartKey] || parsedSheets['vPartition'] || parsedSheets['vpartition'] || [];
+                parsedSheets['vmlist'] = parsedSheets[foundVInfoKey] || parsedSheets['vmList'] || parsedSheets['vmlist'] || [];
                 parsedSheets['vdatacenter'] = parsedSheets['vDatacenter'] || parsedSheets['vdatacenter'] || [];
                 parsedSheets['vcluster'] = parsedSheets['vCluster'] || parsedSheets['vcluster'] || [];
-                parsedSheets['vhost'] = parsedSheets['vHost'] || parsedSheets['vhosts'] || parsedSheets['vhost'] || [];
+                parsedSheets['vhost'] = sheets => sheets['vHost'] || sheets['vhost'] || sheets['vhosts'] || [];
                 parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || parsedSheets['vsnapshot'] || [];
+
+                // DIAGNOSTIC 2 OUT: Print row 1 headers onto console card viewports
+                const diagColumnsMap = document.getElementById('diagColumnsMap');
+                diagColumnsMap.innerHTML = '';
+                
+                const renderHeadersDiag = (label, rowsArray) => {
+                    if(rowsArray && rowsArray.length > 0) {
+                        const headers = Object.keys(rowsArray[0]).slice(0, 8).join(', ');
+                        const div = document.createElement('div');
+                        div.innerHTML = `<span class="text-amber-400 font-bold">${label}:</span> <span class="text-slate-400">[ ${headers}... ]</span>`;
+                        diagColumnsMap.appendChild(div);
+                    } else {
+                        const div = document.createElement('div');
+                        div.innerHTML = `<span class="text-rose-400 font-bold">${label}:</span> <span class="text-rose-500/80 italic">Not found or completely empty array list.</span>`;
+                        diagColumnsMap.appendChild(div);
+                    }
+                };
+
+                renderHeadersDiag('vmList / vMList Rows', parsedSheets['vmlist']);
+                renderHeadersDiag('vDisk Rows', parsedSheets['vdisk']);
+                renderHeadersDiag('vPartition Rows', parsedSheets['vpartition']);
+                
+                // Expose diagnostics panel grid block
+                document.getElementById('diagnosticConsole').classList.remove('hidden');
+                document.getElementById('diagnosticConsole').classList.add('flex');
 
                 processAndSaveVcenterSite(parsedSheets, storageKey);
             };
@@ -553,39 +612,45 @@
 
         function processAndSaveVcenterSite(sheets, saveFileName) {
             try {
-                const dcList = sheets['vdatacenter'];
-                const clusterList = sheets['vcluster'];
-                const hostList = sheets['vhost'];
-                const vmListTab = sheets['vmlist'];
-                const snapList = sheets['vsnapshot'];
-                const partitionList = sheets['vpartition'];
-                const vdiskTabList = sheets['vdisk'];
+                const dcList = sheets['vdatacenter'] || [];
+                const clusterList = sheets['vcluster'] || [];
+                const hostList = sheets['vhost'] || [];
+                const vmListTab = sheets['vmlist'] || [];
+                const snapList = sheets['vsnapshot'] || [];
+                const partitionList = sheets['vpartition'] || [];
+                const vdiskTabList = sheets['vdisk'] || [];
 
                 let totalGPUs = 0;
-                hostList.forEach(h => { totalGPUs += Number(h['GPU Count'] || h['GPUCount'] || 0); });
+                if (Array.isArray(hostList)) {
+                    hostList.forEach(h => { totalGPUs += Number(h['GPU Count'] || h['GPUCount'] || 0); });
+                }
 
-                // SUMIF 1 ENGINE: Direct column matrix alignment for vDisk lookups
+                // SUMIF 1: Aggregate vDisk Tab metrics
                 const vdiskAggregationMap = {};
-                vdiskTabList.forEach(d => {
-                    const vmName = d['VM'] || d['VM Name'] || d['Name'];
-                    if (vmName) {
-                        const diskMiB = parseFloat(d['Capacity MiB'] || d['Capacity (MiB)'] || d['Capacity'] || 0);
-                        vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
-                    }
-                });
+                if (Array.isArray(vdiskTabList)) {
+                    vdiskTabList.forEach(d => {
+                        const vmName = d['VM'] || d['VM Name'] || d['Name'];
+                        if (vmName) {
+                            const diskMiB = parseFloat(d['Capacity MiB'] || d['Capacity (MiB)'] || d['Capacity'] || 0);
+                            vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
+                        }
+                    });
+                }
 
-                // SUMIF 2 ENGINE: Partition configured mapping to column E and Used mapping to column D
+                // SUMIF 2: Aggregate vPartition Tab metrics
                 const partConfigMap = {}, partConsumedMap = {};
-                partitionList.forEach(p => {
-                    const vmName = p['VM'] || p['VM Name'] || p['Name'];
-                    if (vmName) {
-                        const capMiB = parseFloat(p['Capacity MiB'] || p['Capacity (MiB)'] || p['Capacity'] || 0);
-                        const consumedMiB = parseFloat(p['Consumed MiB'] || p['Consumed (MiB)'] || p['Consumed'] || 0);
+                if (Array.isArray(partitionList)) {
+                    partitionList.forEach(p => {
+                        const vmName = p['VM'] || p['VM Name'] || p['Name'];
+                        if (vmName) {
+                            const capMiB = parseFloat(p['Capacity MiB'] || p['Capacity (MiB)'] || p['Capacity'] || 0);
+                            const consumedMiB = parseFloat(p['Consumed MiB'] || p['Consumed (MiB)'] || p['Consumed'] || 0);
 
-                        partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
-                        partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
-                    }
-                });
+                            partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
+                            partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
+                        }
+                    });
+                }
 
                 const optimizedVmList = vmListTab.map(vm => {
                     const name = vm['VM Name'] || vm['VM'] || vm['Name'];
@@ -692,7 +757,7 @@
 
         function renderSnapshotRiskRegister(snaps) {
             const tbody = document.getElementById('snapshotTableBody'); tbody.innerHTML = '';
-            if(snaps.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 italic">No historical snapshots flagged.</td></tr>`; return; }
+            if(!Array.isArray(snaps) || snaps.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 italic">No historical snapshots flagged.</td></tr>`; return; }
             snaps.slice(0, 20).forEach(s => {
                 const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors';
                 const sizeMiB = parseFloat(s['Size MiB (total)'] || s['Size MiB (vmsn)'] || 0);
@@ -703,7 +768,7 @@
 
         function renderPhysicalFleetRegister(hosts) {
             const tbody = document.getElementById('hostTableBody'); tbody.innerHTML = '';
-            if(hosts.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 italic">No physical compute nodes found.</td></tr>`; return; }
+            if(!Array.isArray(hosts) || hosts.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 italic">No physical compute nodes found.</td></tr>`; return; }
             
             hosts.slice(0, 20).forEach(h => {
                 const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors text-[11px]';
