@@ -556,25 +556,37 @@
                 const cpuProfileMap = {};
                 vcpuList.forEach(v => { if(v['VM Name']) cpuProfileMap[v['VM Name']] = parseFloat(v['95th Percentile % (recommended)'] || v['Peak %'] || v['Average %'] || 0) || 0; });
 
-                // RULE 1 MATCH: Group and execute SUMIF against Column C 'Capacity (MiB)' inside vDisk tab explicitly
+                // DYNAMIC ROW WRAPPER MATRIX: Normalize column header matching strings by converting them to lowercase and removing spaces/brackets
+                const findValueByNormalizedKey = (row, partialKey) => {
+                    const cleanPartial = partialKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    for (const fullKey in row) {
+                        const cleanFull = fullKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        if (cleanFull.includes(cleanPartial)) {
+                            return parseFloat(row[fullKey]) || 0;
+                        }
+                    }
+                    return 0;
+                };
+
+                // DYNAMIC SUMIF 1: Scan vDisk row arrays
                 const vdiskAggregationMap = {};
                 vdiskTabList.forEach(d => {
                     const vmName = d['VM Name'] || d['VM'] || d['Name'];
                     if (vmName) {
-                        const diskMiB = parseFloat(d['Capacity (MiB)'] || d['Capacity'] || d['Size (MiB)'] || d['Size'] || 0);
+                        const diskMiB = findValueByNormalizedKey(d, 'capacity');
                         vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
                     }
                 });
 
-                // RULE 2 MATCH: Map Partition Configured to Column E and Partition Used to Column D
+                // DYNAMIC SUMIF 2: Scan vPartition row arrays using your explicit column layout rules
                 const partConfigMap = {}, partConsumedMap = {};
                 partitionList.forEach(p => {
                     const vmName = p['VM Name'] || p['VM'] || p['Name'];
                     if (vmName) {
-                        // Configured maps to Column E 'Capacity (MiB)'
-                        const capMiB = parseFloat(p['Capacity (MiB)'] || p['Capacity'] || 0);
-                        // Used maps to Column D 'Consumed (MiB)'
-                        const consumedMiB = parseFloat(p['Consumed (MiB)'] || p['Consumed'] || p['Used (MiB)'] || p['Used'] || 0);
+                        // Scan for Capacity (MiB) or capacity text conventions
+                        const capMiB = findValueByNormalizedKey(p, 'capacity');
+                        // Scan for Consumed (MiB) or consumed text conventions
+                        const consumedMiB = findValueByNormalizedKey(p, 'consumed');
 
                         partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
                         partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
@@ -587,7 +599,6 @@
                     const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || 0);
                     const ramGB = ramMiB / 1024;
 
-                    // Fallback to primary sheet parameters only if the explicit vDisk tab reference is completely empty
                     const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || vm['Provisioned (MiB)'] || 0);
                     const finalDiskMiB = vdiskAggregationMap[name] !== undefined ? vdiskAggregationMap[name] : fallbackDiskMiB;
 
@@ -669,7 +680,6 @@
                 targetCard.vcpu += v.vcpus || 0; targetCard.mem += v.ramGB || 0; targetCard.diskMiB += v.vdiskCapMiB || 0; targetCard.partCfgMiB += v.partitionConfigMiB || 0; targetCard.partUsedMiB += v.partitionConsumedMiB || 0;
             });
 
-            // ACCURATE SUMIF EXCEL MULTIPLIER: Divide total aggregated MiB properties by 1,048,576 to yield clean Terabytes (TB)
             const injectCardData = (prefix, data) => {
                 const diskTB = data.diskMiB / 1024 / 1024;
                 const partCfgTB = data.partCfgMiB / 1024 / 1024;
@@ -730,7 +740,6 @@
                 const statusBadge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
                 const cpuClass = v.peakCpu95th > 80 ? 'text-rose-400 font-bold' : v.peakCpu95th < 15 && !String(v.state || '').toLowerCase().includes('off') ? 'text-amber-400/80' : 'text-slate-400';
                 
-                // Ledger conversions map to standard GB units (divided by 1024)
                 const vdiskCapGB = v.vdiskCapMiB / 1024;
                 const pConfigGB = v.partitionConfigMiB / 1024;
                 const pConsumedGB = v.partitionConsumedMiB / 1024;
