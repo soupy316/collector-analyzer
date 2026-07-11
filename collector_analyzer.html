@@ -121,7 +121,7 @@
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active NVIDIA GPUs</p><p id="kpiGPUs" class="text-2xl font-black mt-1 text-amber-400">-</p></div>
             </div>
 
-            <!-- New Section: 3 Comprehensive Allocation Rollup Summary Cards -->
+            <!-- Section: 3 Comprehensive Allocation Rollup Summary Cards -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
                 <!-- Card 1: All VMs Summary -->
@@ -134,8 +134,8 @@
                         <tr class="py-2 flex justify-between"><td class="text-slate-400">vCPU</td><td id="sumAllVcpu" class="font-mono text-indigo-400">-</td></tr>
                         <tr class="py-2 flex justify-between"><td class="text-slate-400">Memory</td><td id="sumAllMem" class="font-mono text-cyan-400">-</td></tr>
                         <tr class="py-2 flex justify-between"><td class="text-slate-400">vDisk</td><td id="sumAllDisk" class="font-mono text-purple-400">-</td></tr>
-                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumAllPartCfg" class="font-mono text-slate-300">-</td></tr>
-                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumAllPartUsed" class="font-mono text-slate-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumAllPartCfg" class="font-mono text-amber-400/90">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumAllPartUsed" class="font-mono text-emerald-400">-</td></tr>
                     </table>
                 </div>
 
@@ -149,8 +149,8 @@
                         <tr class="py-2 flex justify-between"><td class="text-slate-400">vCPU</td><td id="sumOnVcpu" class="font-mono text-indigo-400">-</td></tr>
                         <tr class="py-2 flex justify-between"><td class="text-slate-400">Memory</td><td id="sumOnMem" class="font-mono text-cyan-400">-</td></tr>
                         <tr class="py-2 flex justify-between"><td class="text-slate-400">vDisk</td><td id="sumOnDisk" class="font-mono text-purple-400">-</td></tr>
-                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumOnPartCfg" class="font-mono text-slate-300">-</td></tr>
-                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumOnPartUsed" class="font-mono text-slate-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumOnPartCfg" class="font-mono text-amber-400/90">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumOnPartUsed" class="font-mono text-emerald-400">-</td></tr>
                     </table>
                 </div>
 
@@ -164,8 +164,8 @@
                         <tr class="py-2 flex justify-between"><td class="text-slate-400">vCPU</td><td id="sumOffVcpu" class="font-mono text-indigo-400">-</td></tr>
                         <tr class="py-2 flex justify-between"><td class="text-slate-400">Memory</td><td id="sumOffMem" class="font-mono text-cyan-400">-</td></tr>
                         <tr class="py-2 flex justify-between"><td class="text-slate-400">vDisk</td><td id="sumOffDisk" class="font-mono text-purple-400">-</td></tr>
-                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumOffPartCfg" class="font-mono text-slate-300">-</td></tr>
-                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumOffPartUsed" class="font-mono text-slate-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumOffPartCfg" class="font-mono text-amber-400/90">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumOffPartUsed" class="font-mono text-emerald-400">-</td></tr>
                     </table>
                 </div>
             </div>
@@ -216,9 +216,9 @@
                                 <th class="px-6 py-3.5 text-center">vCPUs</th>
                                 <th class="px-6 py-3.5 text-right">Memory (GB)</th>
                                 <th class="px-6 py-3.5 text-right">95th % CPU</th>
-                                <th class="px-6 py-3.5 text-right">Total vDisk Capacity</th>
-                                <th class="px-6 py-3.5 text-right">vPartition Configured</th>
-                                <th class="px-6 py-3.5 text-right">vPartition Consumed</th>
+                                <th class="px-6 py-3.5 text-right">Total vDisk Capacity (GB)</th>
+                                <th class="px-6 py-3.5 text-right">vPartition Configured (GB)</th>
+                                <th class="px-6 py-3.5 text-right">vPartition Consumed (GB)</th>
                                 <th class="px-6 py-3.5 text-right">Guest OS</th>
                             </tr>
                         </thead>
@@ -556,16 +556,16 @@
                 const cpuProfileMap = {};
                 vcpuList.forEach(v => { if(v['VM Name']) cpuProfileMap[v['VM Name']] = parseFloat(v['95th Percentile % (recommended)'] || v['Peak %'] || v['Average %'] || 0) || 0; });
 
+                // CONFIGURATION REFINEMENT: Pull and sum both 'Capacity (MiB)' and 'Consumed (MiB)' columns per VM name
                 const partConfigMap = {}, partConsumedMap = {};
                 partitionList.forEach(p => {
                     const vmName = p['VM Name'] || p['VM'] || p['Name'];
                     if (vmName) {
                         const capMiB = parseFloat(p['Capacity (MiB)'] || p['Capacity'] || p['Size (MiB)'] || p['Size'] || 0);
-                        const freeMiB = parseFloat(p['Free Space (MiB)'] || p['Free Space'] || p['Free (MiB)'] || 0);
-                        const usedMiB = capMiB - freeMiB;
+                        const consumedMiB = parseFloat(p['Consumed (MiB)'] || p['Consumed'] || p['Used (MiB)'] || p['Used'] || 0);
 
                         partConfigMap[vmName] = (partConfigMap[vmName] || 0) + (capMiB / 1024);
-                        partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + (usedMiB / 1024);
+                        partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + (consumedMiB / 1024);
                     }
                 });
 
@@ -631,7 +631,6 @@
             }
         }
 
-        // AGGREGATION & RENDER PIPELINE: Calculates rollup parameters for the 3 new summary views
         function compileKpiPanels(dc, clusters, hosts, vms, gpus) {
             document.getElementById('kpiDC').innerText = dc;
             document.getElementById('kpiClusters').innerText = clusters;
@@ -643,7 +642,6 @@
             const stoppedVMs = vms.filter(v => !String(v.state || '').toLowerCase().includes('on'));
             document.getElementById('kpiActiveVMs').innerText = runningVMs.length;
 
-            // Instantiates clear tracking structure for multi-category metrics processing
             const summaries = {
                 all: { count: vms.length, vcpu: 0, mem: 0, disk: 0, partCfg: 0, partUsed: 0 },
                 on:  { count: runningVMs.length, vcpu: 0, mem: 0, disk: 0, partCfg: 0, partUsed: 0 },
@@ -659,20 +657,22 @@
                 const pCfg = v.partitionConfigGB || 0;
                 const pUsed = v.partitionConsumedGB || 0;
 
-                // Accumulate totals globally
                 summaries.all.vcpu += v.vcpus || 0; summaries.all.mem += ramVal; summaries.all.disk += diskVal; summaries.all.partCfg += pCfg; summaries.all.partUsed += pUsed;
-                // Accumulate totals down into target power vectors
                 targetCard.vcpu += v.vcpus || 0; targetCard.mem += ramVal; targetCard.disk += diskVal; targetCard.partCfg += pCfg; targetCard.partUsed += pUsed;
             });
 
-            // Projection function mapping data variables cleanly into the respective UI DOM targets
+            // SCALING REVOLUTION: Convert disk/partition values into Terabytes (divided by 1024) and inject static labels
             const injectCardData = (prefix, data) => {
+                const diskTB = data.disk / 1024;
+                const partCfgTB = data.partCfg / 1024;
+                const partUsedTB = data.partUsed / 1024;
+
                 document.getElementById(`sum${prefix}Count`).innerText = data.count.toLocaleString();
                 document.getElementById(`sum${prefix}Vcpu`).innerText = data.vcpu.toLocaleString();
-                document.getElementById(`sum${prefix}Mem`).innerText  = data.mem.toLocaleString(undefined, {maximumFractionDigits:1});
-                document.getElementById(`sum${prefix}Disk`).innerText = data.disk.toLocaleString(undefined, {maximumFractionDigits:1});
-                document.getElementById(`sum${prefix}PartCfg`).innerText  = data.partCfg > 0 ? data.partCfg.toLocaleString(undefined, {maximumFractionDigits:1}) : '-';
-                document.getElementById(`sum${prefix}PartUsed`).innerText = data.partUsed > 0 ? data.partUsed.toLocaleString(undefined, {maximumFractionDigits:1}) : '-';
+                document.getElementById(`sum${prefix}Mem`).innerText  = data.mem.toLocaleString(undefined, {maximumFractionDigits:1}) + " GB";
+                document.getElementById(`sum${prefix}Disk`).innerText = diskTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB";
+                document.getElementById(`sum${prefix}PartCfg`).innerText  = partCfgTB > 0 ? partCfgTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '-';
+                document.getElementById(`sum${prefix}PartUsed`).innerText = partUsedTB > 0 ? partUsedTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '-';
             };
 
             injectCardData('All', summaries.all); injectCardData('On', summaries.on); injectCardData('Off', summaries.off);
