@@ -529,10 +529,31 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, {type: 'array'});
+                
+                // BULLETPROOF LOOSE TAB INTERCEPTOR: Search workbook tabs by content keywords instead of fixed strings!
                 const parsedSheets = {};
-                workbook.SheetNames.forEach(sheetName => {
-                    parsedSheets[sheetName.trim().toLowerCase()] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                let foundVDiskKey = 'vdisk', foundVPartKey = 'vpartition', foundVInfoKey = 'vmlist';
+                
+                workbook.SheetNames.forEach(rawName => {
+                    const lowerName = rawName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const rowData = XLSX.utils.sheet_to_json(workbook.Sheets[rawName]);
+                    
+                    if (lowerName.includes('vdisk') || lowerName.includes('disk')) { foundVDiskKey = rawName; }
+                    else if (lowerName.includes('vpartition') || lowerName.includes('partition') || lowerName.includes('vpart')) { foundVPartKey = rawName; }
+                    else if (lowerName.includes('vmlist') || lowerName.includes('vinfo') || lowerName.includes('virtualmachine')) { foundVInfoKey = rawName; }
+                    
+                    parsedSheets[rawName.trim().toLowerCase()] = rowData;
                 });
+                
+                // Normalize names for downstream extraction loops
+                parsedSheets['vdisk'] = parsedSheets[foundVDiskKey.toLowerCase()];
+                parsedSheets['vpartition'] = parsedSheets[foundVPartKey.toLowerCase()];
+                parsedSheets['vmlist'] = parsedSheets[foundVInfoKey.toLowerCase()];
+                parsedSheets['vdatacenter'] = parsedSheets['vdatacenter'] || [];
+                parsedSheets['vcluster'] = parsedSheets['vcluster'] || [];
+                parsedSheets['vhost'] = parsedSheets['vhost'] || parsedSheets['vhosts'] || [];
+                parsedSheets['vsnapshot'] = parsedSheets['vsnapshot'] || [];
+
                 processAndSaveVcenterSite(parsedSheets, storageKey);
             };
             reader.readAsArrayBuffer(file);
@@ -542,21 +563,16 @@
             try {
                 const dcList = sheets['vdatacenter'] || [];
                 const clusterList = sheets['vcluster'] || [];
-                const hostList = sheets['vhost'] || sheets['vhosts'] || [];
-                const dsList = sheets['datastore'] || [];
-                const vmListTab = sheets['vmlist'] || sheets['vinfo'] || [];
-                const vcpuList = sheets['vcpu'] || [];
+                const hostList = sheets['vhost'] || [];
+                const vmListTab = sheets['vmlist'] || [];
                 const snapList = sheets['vsnapshot'] || [];
-                const partitionList = sheets['vpartition'] || sheets['vpartitions'] || [];
-                const vdiskTabList = sheets['vdisk'] || sheets['vdisks'] || [];
+                const partitionList = sheets['vpartition'] || [];
+                const vdiskTabList = sheets['vdisk'] || [];
 
                 let totalGPUs = 0;
-                hostList.forEach(h => { totalGPUs += Number(h['GPU Count']) || 0; });
+                hostList.forEach(h => { totalGPUs += Number(h['GPU Count'] || h['GPUCount'] || 0); });
 
-                const cpuProfileMap = {};
-                vcpuList.forEach(v => { if(v['VM Name']) cpuProfileMap[v['VM Name']] = parseFloat(v['95th Percentile % (recommended)'] || v['Peak %'] || v['Average %'] || 0) || 0; });
-
-                // DYNAMIC ROW WRAPPER MATRIX: Normalize column header matching strings by converting them to lowercase and removing spaces/brackets
+                // BULLETPROOF ROW PROPERTY EXTRACTOR: Grabs numerical rows even if headers have messy spaces/brackets
                 const findValueByNormalizedKey = (row, partialKey) => {
                     const cleanPartial = partialKey.toLowerCase().replace(/[^a-z0-9]/g, '');
                     for (const fullKey in row) {
@@ -568,24 +584,22 @@
                     return 0;
                 };
 
-                // DYNAMIC SUMIF 1: Scan vDisk row arrays
+                // Group and execute SUMIF against Column C 'Capacity (MiB)' inside loose vDisk tab
                 const vdiskAggregationMap = {};
                 vdiskTabList.forEach(d => {
-                    const vmName = d['VM Name'] || d['VM'] || d['Name'];
+                    const vmName = d['VM Name'] || d['VM'] || d['Name'] || d['vmName'];
                     if (vmName) {
                         const diskMiB = findValueByNormalizedKey(d, 'capacity');
                         vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
                     }
                 });
 
-                // DYNAMIC SUMIF 2: Scan vPartition row arrays using your explicit column layout rules
+                // Group Partition Configured (Column E) and Partition Used (Column D)
                 const partConfigMap = {}, partConsumedMap = {};
                 partitionList.forEach(p => {
-                    const vmName = p['VM Name'] || p['VM'] || p['Name'];
+                    const vmName = p['VM Name'] || p['VM'] || p['Name'] || p['vmName'];
                     if (vmName) {
-                        // Scan for Capacity (MiB) or capacity text conventions
                         const capMiB = findValueByNormalizedKey(p, 'capacity');
-                        // Scan for Consumed (MiB) or consumed text conventions
                         const consumedMiB = findValueByNormalizedKey(p, 'consumed');
 
                         partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
@@ -594,22 +608,22 @@
                 });
 
                 const optimizedVmList = vmListTab.map(vm => {
-                    const name = vm['VM Name'] || vm['VM'] || vm['Name'];
+                    const name = vm['VM Name'] || vm['VM'] || vm['Name'] || vm['vmName'];
                     
-                    const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || 0);
+                    const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || vm['memoryMiB'] || 0);
                     const ramGB = ramMiB / 1024;
 
-                    const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || vm['Provisioned (MiB)'] || 0);
+                    const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || vm['Provisioned (MiB)'] || vm['Provisioned Space'] || 0);
                     const finalDiskMiB = vdiskAggregationMap[name] !== undefined ? vdiskAggregationMap[name] : fallbackDiskMiB;
 
                     return {
                         name: name || 'Unknown Asset',
-                        state: vm['Power State'] || vm['Powerstate'] || 'Unknown',
+                        state: vm['Power State'] || vm['Powerstate'] || vm['powerState'] || 'Unknown',
                         os: vm['Guest OS'] || vm['Guest Operating System'] || vm['OS'] || 'Other',
-                        vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || 0),
+                        vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || vm['vCpuCount'] || 0),
                         ramGB: ramGB,
                         vdiskCapMiB: finalDiskMiB,
-                        peakCpu95th: cpuProfileMap[name] || 0,
+                        peakCpu95th: 0, 
                         partitionConfigMiB: partConfigMap[name] || 0,
                         partitionConsumedMiB: partConsumedMap[name] || 0
                     };
@@ -628,7 +642,7 @@
                 const siteStatePayload = {
                     kpis: { dc: dcList.length, clusters: clusterList.length, hosts: hostList.length, gpus: totalGPUs },
                     cache: { vmRollup: optimizedVmList },
-                    raw: { clusters: clusterList, datastores: dsList, snaps: snapList, hosts: hostList }
+                    raw: { clusters: clusterList, snaps: snapList, hosts: hostList }
                 };
 
                 writeSiteFileToDisk(saveFileName, siteStatePayload);
