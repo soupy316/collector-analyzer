@@ -128,7 +128,7 @@
                 <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Cluster Host Workload Densities</h3><div class="relative flex-1 min-h-0"><canvas id="clusterDensityChart"></canvas></div></div>
             </div>
 
-            <!-- Optimized Grid Block: Snapshot Footprint Alongside Extended Host Fleet Inventory Grid -->
+            <!-- Optimized Grid Block -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4 lg:col-span-1">
                     <div><h3 class="text-sm font-bold text-slate-200">Active Storage Risks: Snapshot Footprint</h3><p class="text-xs text-slate-400">Orphaned checkpoints consuming block storage layers</p></div>
@@ -159,7 +159,7 @@
                 </div>
             </div>
 
-            <!-- Overhauled Grid Layout: Virtual Machine Details Ledger -->
+            <!-- Virtual Machine Details Ledger -->
             <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 overflow-hidden shadow-2xl">
                 <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/20">
                     <div><h3 class="text-sm font-bold text-slate-200">Virtual Machine Details</h3></div>
@@ -454,7 +454,10 @@
                 renderWorkloadLedger(window.environmentCache.vmRollup);
                 
                 document.getElementById('txtLocationName').value = fileKey;
-            } catch(err) { alert("Error during cached file restoration procedures."); }
+            } catch(err) { 
+                console.error(err);
+                alert("Error during cached file restoration procedures. File may be corrupted or outdated."); 
+            }
         }
 
         function parseAuditWorkbook(e) {
@@ -514,12 +517,10 @@
                 const cpuProfileMap = {};
                 vcpuList.forEach(v => { if(v['VM Name']) cpuProfileMap[v['VM Name']] = parseFloat(v['95th Percentile % (recommended)'] || v['Peak %'] || v['Average %'] || 0) || 0; });
 
-                // AGGREGATION PIPELINE: Scan vPartition tab to group allocation metrics per unique Virtual Machine name
                 const partConfigMap = {}, partConsumedMap = {};
                 partitionList.forEach(p => {
                     const vmName = p['VM Name'] || p['VM'] || p['Name'];
                     if (vmName) {
-                        // Extract allocation metrics and convert sizes from MiB to Gigabytes safely
                         const capMiB = parseFloat(p['Capacity (MiB)'] || p['Capacity'] || p['Size (MiB)'] || p['Size'] || 0);
                         const freeMiB = parseFloat(p['Free Space (MiB)'] || p['Free Space'] || p['Free (MiB)'] || 0);
                         const usedMiB = capMiB - freeMiB;
@@ -532,11 +533,9 @@
                 const optimizedVmList = vmListTab.map(vm => {
                     const name = vm['VM Name'] || vm['VM'] || vm['Name'];
                     
-                    // Standardize memory fields (convert MiB allocations to standard Gigabytes)
                     const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || 0);
                     const ramGB = ramMiB / 1024;
 
-                    // Extract overall vDisk Capacity configurations mapped out of primary properties
                     const vdiskCapacityMiB = parseFloat(vm['Capacity (MiB)'] || vm['Provisioned (MiB)'] || vm['Provisioned Space'] || 0);
                     const vdiskCapacityGB = vdiskCapacityMiB / 1024;
 
@@ -630,7 +629,6 @@
             });
         }
 
-        // Expanded Physical Fleet Table (MHz to GHz Decimals Conversion)
         function renderPhysicalFleetRegister(hosts) {
             const tbody = document.getElementById('hostTableBody'); tbody.innerHTML = '';
             if(hosts.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 italic">No physical compute nodes found.</td></tr>`; return; }
@@ -659,7 +657,6 @@
             });
         }
 
-        // OVERHAULED METHOD: Rendering Virtual Machine Details Ledger
         function renderWorkloadLedger(vms) {
             const tbody = document.getElementById('vmTableBody'); 
             const query = document.getElementById('vmSearch').value.toLowerCase(); 
@@ -674,20 +671,25 @@
                 const statusBadge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
                 const cpuClass = v.peakCpu95th > 80 ? 'text-rose-400 font-bold' : v.peakCpu95th < 15 && !String(v.state || '').toLowerCase().includes('off') ? 'text-amber-400/80' : 'text-slate-400';
                 
-                // Format partition metrics safely (display placeholder string if data isn't loaded)
-                const vpartConfigStr = v.partitionConfigGB > 0 ? `${v.partitionConfigGB.toFixed(1)}` : '-';
-                const vpartConsumedStr = v.partitionConsumedGB > 0 ? `${v.partitionConsumedGB.toFixed(1)}` : '-';
+                // CRASH PROTECTION BOOTSTRAPS: Inject fallback variables (|| 0) to bypass errors on older format templates safely
+                const ramGBVal = v.ramGB || (parseFloat(v.ram || 0) / 1024);
+                const vdiskCapVal = v.vdiskCapGB || (parseFloat(v.consumedStorage || 0));
+                const pConfig = v.partitionConfigGB || 0;
+                const pConsumed = v.partitionConsumedGB || 0;
+
+                const vpartConfigStr = pConfig > 0 ? `${pConfig.toFixed(1)}` : '-';
+                const vpartConsumedStr = pConsumed > 0 ? `${pConsumed.toFixed(1)}` : '-';
 
                 tr.innerHTML = `
                     <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
                     <td class="px-6 py-3.5">${statusBadge}</td>
                     <td class="px-6 py-3.5 text-center font-mono">${v.vcpus}</td>
-                    <td class="px-6 py-3.5 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)}</td>
+                    <td class="px-6 py-3.5 text-right font-mono text-cyan-400">${ramGBVal.toFixed(1)}</td>
                     <td class="px-6 py-3.5 text-right font-mono ${cpuClass}">${v.peakCpu95th > 0 ? v.peakCpu95th.toFixed(1) + '%' : '-'}</td>
-                    <td class="px-6 py-3.5 text-right font-mono text-purple-400">${v.vdiskCapGB.toFixed(1)}</td>
+                    <td class="px-6 py-3.5 text-right font-mono text-purple-400">${vdiskCapVal.toFixed(1)}</td>
                     <td class="px-6 py-3.5 text-right font-mono text-slate-400">${vpartConfigStr}</td>
                     <td class="px-6 py-3.5 text-right font-mono text-slate-400">${vpartConsumedStr}</td>
-                    <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os}</td>
+                    <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
                 `;
                 tbody.appendChild(tr);
             });
