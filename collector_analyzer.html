@@ -8,8 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- SheetJS (XLSX Parser) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-indigo-500 selection:text-white">
 
@@ -123,12 +121,56 @@
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active NVIDIA GPUs</p><p id="kpiGPUs" class="text-2xl font-black mt-1 text-amber-400">-</p></div>
             </div>
 
-            <!-- Charts Section -->
-            <div class="grid grid-cols-1 gap-6">
-                <div class="bg-slate-900/40 p-5 rounded-xl border border-slate-800/80 flex flex-col h-[360px]"><h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-4">Cluster Host Workload Densities</h3><div class="relative flex-1 min-h-0"><canvas id="clusterDensityChart"></canvas></div></div>
+            <!-- New Section: 3 Comprehensive Allocation Rollup Summary Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Card 1: All VMs Summary -->
+                <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-xl shadow-md">
+                    <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span> All VMs Summary
+                    </h3>
+                    <table class="w-full text-xs font-medium divide-y divide-slate-800/40">
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400"># VMs</td><td id="sumAllCount" class="font-mono text-slate-200">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vCPU</td><td id="sumAllVcpu" class="font-mono text-indigo-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Memory</td><td id="sumAllMem" class="font-mono text-cyan-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vDisk</td><td id="sumAllDisk" class="font-mono text-purple-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumAllPartCfg" class="font-mono text-slate-300">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumAllPartUsed" class="font-mono text-slate-400">-</td></tr>
+                    </table>
+                </div>
+
+                <!-- Card 2: Powered On VMs Summary -->
+                <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-xl shadow-md">
+                    <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/50"></span> Powered On VMs Summary
+                    </h3>
+                    <table class="w-full text-xs font-medium divide-y divide-slate-800/40">
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400"># VMs</td><td id="sumOnCount" class="font-mono text-emerald-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vCPU</td><td id="sumOnVcpu" class="font-mono text-indigo-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Memory</td><td id="sumOnMem" class="font-mono text-cyan-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vDisk</td><td id="sumOnDisk" class="font-mono text-purple-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumOnPartCfg" class="font-mono text-slate-300">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumOnPartUsed" class="font-mono text-slate-400">-</td></tr>
+                    </table>
+                </div>
+
+                <!-- Card 3: Powered Off VMs Summary -->
+                <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-xl shadow-md">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-slate-600"></span> Powered Off VMs Summary
+                    </h3>
+                    <table class="w-full text-xs font-medium divide-y divide-slate-800/40">
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400"># VMs</td><td id="sumOffCount" class="font-mono text-slate-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vCPU</td><td id="sumOffVcpu" class="font-mono text-indigo-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Memory</td><td id="sumOffMem" class="font-mono text-cyan-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vDisk</td><td id="sumOffDisk" class="font-mono text-purple-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumOffPartCfg" class="font-mono text-slate-300">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumOffPartUsed" class="font-mono text-slate-400">-</td></tr>
+                    </table>
+                </div>
             </div>
 
-            <!-- Optimized Grid Block -->
+            <!-- Fleet Registries Grid layout -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4 lg:col-span-1">
                     <div><h3 class="text-sm font-bold text-slate-200">Active Storage Risks: Snapshot Footprint</h3><p class="text-xs text-slate-400">Orphaned checkpoints consuming block storage layers</p></div>
@@ -192,8 +234,6 @@
         let activeProjectDirectoryHandle = null;
         let currentLoadedFilesMap = {};
         let scannedCustomerFoldersList = [];
-        
-        let densityChart = null;
         window.environmentCache = {};
 
         // DOM Triggers
@@ -448,7 +488,6 @@
                 document.getElementById('dashboardState').classList.remove('hidden');
 
                 compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.gpus);
-                compileVisualCharts(stateObj.raw.clusters);
                 renderSnapshotRiskRegister(stateObj.raw.snaps);
                 renderPhysicalFleetRegister(stateObj.raw.hosts);
                 renderWorkloadLedger(window.environmentCache.vmRollup);
@@ -456,7 +495,7 @@
                 document.getElementById('txtLocationName').value = fileKey;
             } catch(err) { 
                 console.error(err);
-                alert("Error during cached file restoration procedures. File may be corrupted or outdated."); 
+                alert("Error during cached file restoration procedures. File format mismatch."); 
             }
         }
 
@@ -558,7 +597,6 @@
                 document.getElementById('dashboardState').classList.remove('hidden');
 
                 compileKpiPanels(dcList.length, clusterList.length, hostList.length, optimizedVmList, totalGPUs);
-                compileVisualCharts(clusterList);
                 renderSnapshotRiskRegister(snapList);
                 renderPhysicalFleetRegister(hostList);
                 renderWorkloadLedger(optimizedVmList);
@@ -593,6 +631,7 @@
             }
         }
 
+        // AGGREGATION & RENDER PIPELINE: Calculates rollup parameters for the 3 new summary views
         function compileKpiPanels(dc, clusters, hosts, vms, gpus) {
             document.getElementById('kpiDC').innerText = dc;
             document.getElementById('kpiClusters').innerText = clusters;
@@ -600,22 +639,43 @@
             document.getElementById('kpiVMs').innerText = vms.length;
             document.getElementById('kpiGPUs').innerText = gpus;
             
-            const activeCount = vms.filter(v => String(v.state || '').toLowerCase().includes('on')).length;
-            document.getElementById('kpiActiveVMs').innerText = activeCount;
-        }
+            const runningVMs = vms.filter(v => String(v.state || '').toLowerCase().includes('on'));
+            const stoppedVMs = vms.filter(v => !String(v.state || '').toLowerCase().includes('on'));
+            document.getElementById('kpiActiveVMs').innerText = runningVMs.length;
 
-        function compileVisualCharts(clusters) {
-            const ctxCluster = document.getElementById('clusterDensityChart').getContext('2d');
-            if(densityChart) densityChart.destroy();
-            const clusterSample = clusters.slice(0, 8);
-            densityChart = new Chart(ctxCluster, {
-                type: 'bar',
-                data: {
-                    labels: clusterSample.map(c => c['Cluster Name'] || 'Cluster'),
-                    datasets: [{ label: 'Avg CPU Load %', data: clusterSample.map(c => parseFloat(c['CPU Usage %'] || 0)), backgroundColor: 'rgba(99, 102, 241, 0.75)' }, { label: 'Avg Memory Load %', data: clusterSample.map(c => parseFloat(c['Memory Usage %'] || 0)), backgroundColor: 'rgba(168, 85, 247, 0.75)' }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { max: 100, ticks: { color: '#64748b' } }, x: { ticks: { color: '#64748b' } } } }
+            // Instantiates clear tracking structure for multi-category metrics processing
+            const summaries = {
+                all: { count: vms.length, vcpu: 0, mem: 0, disk: 0, partCfg: 0, partUsed: 0 },
+                on:  { count: runningVMs.length, vcpu: 0, mem: 0, disk: 0, partCfg: 0, partUsed: 0 },
+                off: { count: stoppedVMs.length, vcpu: 0, mem: 0, disk: 0, partCfg: 0, partUsed: 0 }
+            };
+
+            vms.forEach(v => {
+                const isRunning = String(v.state || '').toLowerCase().includes('on');
+                const targetCard = isRunning ? summaries.on : summaries.off;
+                
+                const ramVal = v.ramGB || (parseFloat(v.ram || 0) / 1024);
+                const diskVal = v.vdiskCapGB || parseFloat(v.consumedStorage || 0);
+                const pCfg = v.partitionConfigGB || 0;
+                const pUsed = v.partitionConsumedGB || 0;
+
+                // Accumulate totals globally
+                summaries.all.vcpu += v.vcpus || 0; summaries.all.mem += ramVal; summaries.all.disk += diskVal; summaries.all.partCfg += pCfg; summaries.all.partUsed += pUsed;
+                // Accumulate totals down into target power vectors
+                targetCard.vcpu += v.vcpus || 0; targetCard.mem += ramVal; targetCard.disk += diskVal; targetCard.partCfg += pCfg; targetCard.partUsed += pUsed;
             });
+
+            // Projection function mapping data variables cleanly into the respective UI DOM targets
+            const injectCardData = (prefix, data) => {
+                document.getElementById(`sum${prefix}Count`).innerText = data.count.toLocaleString();
+                document.getElementById(`sum${prefix}Vcpu`).innerText = data.vcpu.toLocaleString();
+                document.getElementById(`sum${prefix}Mem`).innerText  = data.mem.toLocaleString(undefined, {maximumFractionDigits:1});
+                document.getElementById(`sum${prefix}Disk`).innerText = data.disk.toLocaleString(undefined, {maximumFractionDigits:1});
+                document.getElementById(`sum${prefix}PartCfg`).innerText  = data.partCfg > 0 ? data.partCfg.toLocaleString(undefined, {maximumFractionDigits:1}) : '-';
+                document.getElementById(`sum${prefix}PartUsed`).innerText = data.partUsed > 0 ? data.partUsed.toLocaleString(undefined, {maximumFractionDigits:1}) : '-';
+            };
+
+            injectCardData('All', summaries.all); injectCardData('On', summaries.on); injectCardData('Off', summaries.off);
         }
 
         function renderSnapshotRiskRegister(snaps) {
@@ -635,14 +695,11 @@
             
             hosts.slice(0, 20).forEach(h => {
                 const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors text-[11px]';
-                
                 const hostName = h['Host Name'] || h['Host IP'] || h['Host'] || 'Unknown Host';
                 const hwModel = h['Model'] || h['Hardware Model'] || '-';
                 const cpuModel = h['CPU Model'] || h['Processor Type'] || h['Processor Model'] || '-';
-                
                 const cpuSpeedRaw = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || h['CPU Speed MHz'] || 0);
                 const cpuSpeedStr = cpuSpeedRaw > 0 ? `${(cpuSpeedRaw / 1000).toFixed(2)} GHz` : '-';
-                
                 const ramRaw = parseFloat(h['Memory Size'] || h['Memory Size (MiB)'] || h['RAM'] || 0);
                 const ramString = ramRaw > 1024 ? `${(ramRaw / 1024).toFixed(0)} GB` : ramRaw > 0 ? `${ramRaw} MB` : '-';
                 
@@ -658,24 +715,16 @@
         }
 
         function renderWorkloadLedger(vms) {
-            const tbody = document.getElementById('vmTableBody'); 
-            const query = document.getElementById('vmSearch').value.toLowerCase(); 
-            tbody.innerHTML = '';
-            
+            const tbody = document.getElementById('vmTableBody'); const query = document.getElementById('vmSearch').value.toLowerCase(); tbody.innerHTML = '';
             vms.forEach(v => {
                 if(query && !v.name.toLowerCase().includes(query) && !v.os.toLowerCase().includes(query)) return;
-                
-                const tr = document.createElement('tr'); 
-                tr.className = "hover:bg-slate-900/50 transition border-b border-slate-900/40 font-medium text-slate-300";
-                
+                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/50 transition border-b border-slate-900/40 font-medium text-slate-300";
                 const statusBadge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
                 const cpuClass = v.peakCpu95th > 80 ? 'text-rose-400 font-bold' : v.peakCpu95th < 15 && !String(v.state || '').toLowerCase().includes('off') ? 'text-amber-400/80' : 'text-slate-400';
                 
-                // CRASH PROTECTION BOOTSTRAPS: Inject fallback variables (|| 0) to bypass errors on older format templates safely
                 const ramGBVal = v.ramGB || (parseFloat(v.ram || 0) / 1024);
-                const vdiskCapVal = v.vdiskCapGB || (parseFloat(v.consumedStorage || 0));
-                const pConfig = v.partitionConfigGB || 0;
-                const pConsumed = v.partitionConsumedGB || 0;
+                const vdiskCapVal = v.vdiskCapGB || parseFloat(v.consumedStorage || 0);
+                const pConfig = v.partitionConfigGB || 0; const pConsumed = v.partitionConsumedGB || 0;
 
                 const vpartConfigStr = pConfig > 0 ? `${pConfig.toFixed(1)}` : '-';
                 const vpartConsumedStr = pConsumed > 0 ? `${pConsumed.toFixed(1)}` : '-';
