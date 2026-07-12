@@ -15,8 +15,8 @@
     <header class="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <!-- Incremented Tracking Version Number Marker Tag to v1.0.7 -->
-                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.7</div>
+                <!-- Incremented Tracking Version Number Marker Tag to v1.0.8 -->
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.8</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
                     <p class="text-xs text-slate-400">Comprehensive Local Repository & 21-Tab Infrastructure Assessment Suite</p>
@@ -25,9 +25,9 @@
             
             <!-- File Input Upload -->
             <div id="uploadZone" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <label class="flex items-center justify-center gap-2.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl cursor-pointer transition-all text-sm font-medium shadow-lg shadow-indigo-600/10 group whitespace-nowrap">
+                <label class="flex items-center justify-center gap-2.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium shadow-lg shadow-indigo-600/10 group whitespace-nowrap cursor-pointer transition-all">
                     <svg class="w-4 h-4 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    <span class="text-white">Process & Add Spreadsheet</span>
+                    <span>Process & Add Spreadsheet</span>
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
                 </label>
             </div>
@@ -42,17 +42,13 @@
                 <div id="workspaceIndicator" class="w-3 h-3 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50 shrink-0"></div>
                 <div>
                     <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Local Collector Repository</h2>
-                    <p id="workspacePath" class="text-xs text-slate-500 mt-0.5 font-medium">Checking browser storage for remembered repository handle...</p>
+                    <p id="workspacePath" class="text-xs text-slate-500 mt-0.5 font-medium">No directory workspace path initialized.</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-4 w-full lg:w-auto justify-end">
-                <button id="btnSelectWorkspace" class="hidden px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/15">
+                <button id="btnSelectWorkspace" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/15">
                     Set Local Repository Path
-                </button>
-                
-                <button id="btnRestoreWorkspace" class="hidden px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-emerald-600/15 animate-pulse">
-                    ⚡ Reconnect Local Repository
                 </button>
 
                 <div id="projectControls" class="hidden flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
@@ -162,7 +158,7 @@
                                 <th class="p-3">VM Name</th>
                                 <th class="p-3 text-center">Power State</th>
                                 <th class="p-3 text-center">Allocated vCPUs</th>
-                                <th class="p-3 text-right">95th % CPU Usage</th>
+                                <th class="p-3 text-right">Max CPU % Spikes</th>
                                 <th class="p-3 text-right">Assigned Memory</th>
                             </tr>
                         </thead>
@@ -256,6 +252,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full xl:w-auto">
                         <h3 class="text-sm font-bold text-slate-200 shrink-0">Virtual Machine Ledger</h3>
                         
+                        <!-- Dual Context Tab Flippers to swap view layouts instantly -->
                         <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800 shrink-0">
                             <button id="toggleViewVmDetails" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer">
                                 Per VM Details
@@ -278,6 +275,7 @@
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
+                        <!-- Dynamic Ledger Table Grid Context Header Target -->
                         <thead id="vmTableHeaderTarget"></thead>
                         <tbody id="vmTableBody" class="divide-y divide-slate-800/50 text-slate-300"></tbody>
                     </table>
@@ -296,18 +294,16 @@
 
         // DOM Triggers
         document.getElementById('btnSelectWorkspace').addEventListener('click', selectNewWorkspaceHandle);
-        document.getElementById('btnRestoreWorkspace').addEventListener('click', restoreSavedWorkspaceHandle);
+        document.getElementById('toggleViewVmDetails').addEventListener('click', () => { swapActiveLedgerContext('vm'); });
+        document.getElementById('toggleViewCpuDetails').addEventListener('click', () => { swapActiveLedgerContext('cpu'); });
+        document.getElementById('txtCustomerSearch').addEventListener('input', filterCustomerDropdown);
         document.getElementById('btnOpenCustomer').addEventListener('click', openSelectedCustomerFolder);
         document.getElementById('btnDeleteCustomer').addEventListener('click', removeSelectedCustomerFolder);
         document.getElementById('btnTriggerCreateMode').addEventListener('click', toggleCreateCustomerMode);
         document.getElementById('btnCancelCreate').addEventListener('click', toggleCreateCustomerMode);
         document.getElementById('btnCreateCustomer').addEventListener('click', createAndOpenNewCustomer);
-        document.getElementById('txtCustomerSearch').addEventListener('input', filterCustomerDropdown);
         document.getElementById('btnExportDataPackage').addEventListener('click', triggerExcelDataExportSequence);
         
-        document.getElementById('toggleViewVmDetails').addEventListener('click', () => { swapActiveLedgerContext('vm'); });
-        document.getElementById('toggleViewCpuDetails').addEventListener('click', () => { swapActiveLedgerContext('cpu'); });
-
         document.getElementById('cardHotCpuTrigger').addEventListener('click', () => {
             const block = document.getElementById('hotCpuDropdownPanel');
             block.classList.toggle('hidden');
@@ -318,8 +314,6 @@
         document.getElementById('vmSearch').addEventListener('input', () => {
             if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
         });
-
-        window.addEventListener('DOMContentLoaded', checkIndexedDbForSavedWorkspace);
 
         function swapActiveLedgerContext(viewMode) {
             activeLedgerContextView = viewMode;
@@ -335,75 +329,17 @@
             if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
         }
 
-        function getDbInstance() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open("vAnalystWorkspaceDB", 1);
-                request.onupgradeneeded = (e) => { e.target.result.createObjectStore("handles"); };
-                request.onsuccess = (e) => resolve(e.target.result);
-                request.onerror = (e) => reject(e.target.error);
-            });
-        }
-
-        async function checkIndexedDbForSavedWorkspace() {
-            try {
-                const db = await getDbInstance();
-                const tx = db.transaction("handles", "readonly");
-                const savedHandle = await new Promise((res) => {
-                    const req = tx.objectStore("handles").get("rootFolder");
-                    req.onsuccess = () => res(req.result);
-                });
-
-                if (savedHandle) {
-                    document.getElementById('workspacePath').innerText = `Discovered workspace folder: [ ${savedHandle.name} ]`;
-                    document.getElementById('btnRestoreWorkspace').innerText = `⚡ Reconnect Local Repository [ ${savedHandle.name} ]`;
-                    document.getElementById('btnRestoreWorkspace').classList.remove('hidden');
-                    document.getElementById('btnSelectWorkspace').classList.add('hidden');
-                } else {
-                    document.getElementById('workspacePath').innerText = "No root workspace connected yet.";
-                    document.getElementById('btnSelectWorkspace').classList.remove('hidden');
-                }
-            } catch (err) {
-                document.getElementById('btnSelectWorkspace').classList.remove('hidden');
-            }
-        }
-
         async function selectNewWorkspaceHandle() {
             try {
                 rootDirectoryHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
-                const db = await getDbInstance();
-                const tx = db.transaction("handles", "readwrite");
-                tx.objectStore("handles").put(rootDirectoryHandle, "rootFolder");
                 await handleWorkspaceActivationSuccess();
-            } catch (err) { alert("Permission required to index files."); }
-        }
-
-        async function restoreSavedWorkspaceHandle() {
-            try {
-                const db = await getDbInstance();
-                const tx = db.transaction("handles", "readonly");
-                const savedHandle = await new Promise((res) => {
-                    const req = tx.objectStore("handles").get("rootFolder");
-                    req.onsuccess = () => res(req.result);
-                });
-
-                const options = { mode: 'readwrite' };
-                if ((await savedHandle.queryPermission(options)) === 'granted' || 
-                    (await savedHandle.requestPermission(options)) === 'granted') {
-                    rootDirectoryHandle = savedHandle;
-                    await handleWorkspaceActivationSuccess();
-                } else {
-                    alert("Directory verification declined.");
-                }
-            } catch(err) {
-                document.getElementById('btnSelectWorkspace').classList.remove('hidden');
-            }
+            } catch (err) { alert("Permission required to connect workspace path."); }
         }
 
         async function handleWorkspaceActivationSuccess() {
             document.getElementById('workspaceIndicator').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40";
             document.getElementById('workspacePath').innerText = `Active Repository Connected: [ ${rootDirectoryHandle.name} ]`;
             document.getElementById('btnSelectWorkspace').classList.add('hidden');
-            document.getElementById('btnRestoreWorkspace').classList.add('hidden');
             document.getElementById('projectControls').classList.remove('hidden');
             document.getElementById('projectControls').classList.add('flex');
             await scanRepositoryForCustomers();
@@ -488,184 +424,41 @@
                 document.getElementById('welcomeState').classList.remove('hidden');
                 await scanAndRenderFileChips();
             } catch (err) {
-                alert("Failed renaming internal storage index layout: " + err.message);
+                alert("Failed renaming storage index layout: " + err.message);
             }
         }
 
-        async function removeSpecificSiteFile(fileKey) {
-            const confirmFileDel = confirm(`Delete snapshot "${fileKey}"?`);
-            if(!confirmFileDel) return;
+        async function removeSelectedCustomerFolder() {
+            const selectedVal = document.getElementById('selCustomer').value;
+            if(!selectedVal) return;
+            const confirmFirst = confirm(`Are you sure you want to delete "${selectedVal.replace(/_/g, ' ')}"?`);
+            if(!confirmFirst) return;
 
             try {
-                const storageFileName = `${fileKey.replace(/ /g, '_')}.json`;
-                await activeProjectDirectoryHandle.removeEntry(storageFileName);
+                await rootDirectoryHandle.removeEntry(selectedVal, { recursive: true });
+                activeProjectDirectoryHandle = null;
+                document.getElementById('uploadZone').classList.add('hidden');
+                document.getElementById('locationSelectorZone').classList.add('hidden');
                 document.getElementById('dashboardState').classList.add('hidden');
                 document.getElementById('welcomeState').classList.remove('hidden');
+                await scanRepositoryForCustomers();
+            } catch (err) { alert("Could not remove folder target."); }
+        }
+
+        async function createAndOpenNewCustomer() {
+            const inputVal = document.getElementById('txtNewCustomerName').value.trim();
+            if(!inputVal) return;
+            const cleanFolder = inputVal.replace(/[^a-z0-9_]/gi, '_');
+
+            try {
+                activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(cleanFolder, { create: true });
+                await scanRepositoryForCustomers();
+                toggleCreateCustomerMode();
+                document.getElementById('selCustomer').value = cleanFolder;
+                document.getElementById('uploadZone').classList.remove('hidden');
+                document.getElementById('lblCustomerClusters').innerText = `${inputVal} Clusters:`;
                 await scanAndRenderFileChips();
-            } catch(err) { alert("Failed deleting record."); }
-        }
-
-        async function loadCachedSiteFile(fileKey) {
-            try {
-                const handle = currentLoadedFilesMap[fileKey];
-                const file = await handle.getFile();
-                const text = await file.text();
-                const stateObj = JSON.parse(text);
-
-                window.environmentCache = stateObj.cache;
-                window.environmentCache.rawHostsMetadata = stateObj.raw.hosts || [];
-                
-                document.getElementById('welcomeState').classList.add('hidden');
-                document.getElementById('dashboardState').classList.remove('hidden');
-
-                compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.gpus);
-                renderSnapshotRiskRegister(stateObj.raw.snaps);
-                renderPhysicalFleetRegister(stateObj.raw.hosts);
-                renderWorkloadLedger(window.environmentCache.vmRollup);
-            } catch(err) { 
-                alert("Error loading cached file footprint entry."); 
-            }
-        }
-
-        function parseAuditWorkbook(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const promptName = prompt(`Please input a clear descriptor label for this workbook (e.g., Production, DR Site):`);
-            if (!promptName || !promptName.trim()) {
-                alert("Upload aborted: Name is mandatory.");
-                e.target.value = ''; 
-                return;
-            }
-
-            const d = new Date();
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            const yy = String(d.getFullYear()).slice(-2);
-            const dateStringToken = `${mm}.${dd}.${yy}`;
-
-            const baseCleanTitle = promptName.replace(/[^a-z0-9_ ]/gi, '').trim();
-            const finalDisplayTitle = `${baseCleanTitle} ${dateStringToken}`;
-            const cleanStorageFileKey = finalDisplayTitle.replace(/ /g, '_');
-
-            processFilePayload(file, cleanStorageFileKey);
-        }
-
-        function processFilePayload(file, storageKey) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const parsedSheets = {};
-                
-                workbook.SheetNames.forEach(name => {
-                    parsedSheets[name.trim()] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
-                });
-                
-                parsedSheets['vmlist'] = parsedSheets['vmList'] || [];
-                parsedSheets['vdisk'] = parsedSheets['vDisk'] || [];
-                parsedSheets['vpartition'] = parsedSheets['vPartition'] || [];
-                parsedSheets['vdatacenter'] = parsedSheets['vDataCenter'] || [];
-                parsedSheets['vcluster'] = parsedSheets['vCluster'] || [];
-                parsedSheets['vhost'] = parsedSheets['vHosts'] || [];
-                parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || [];
-                parsedSheets['vcpu'] = parsedSheets['vCPU'] || []; 
-
-                const diagTabsList = document.getElementById('diagTabsList');
-                diagTabsList.innerHTML = '';
-                workbook.SheetNames.forEach(name => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `Tab Label: <span class="text-indigo-400 font-bold">"${name}"</span>`;
-                    diagTabsList.appendChild(li);
-                });
-                
-                document.getElementById('diagnosticConsole').classList.remove('hidden');
-                document.getElementById('diagnosticConsole').classList.add('flex');
-
-                processAndSaveVcenterSite(parsedSheets, storageKey);
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function processAndSaveVcenterSite(sheets, saveFileName) {
-            try {
-                const dcList = sheets['vdatacenter'] || [];
-                const clusterList = sheets['vcluster'] || [];
-                const hostList = sheets['vhost'] || [];
-                const vmListTab = sheets['vmlist'] || [];
-                const snapList = sheets['vsnapshot'] || [];
-                const partitionList = sheets['vpartition'] || [];
-                const vdiskTabList = sheets['vdisk'] || [];
-                const vcpuPerformanceList = sheets['vcpu'] || [];
-
-                const vcpuDataMap = {};
-                vcpuPerformanceList.forEach(v => {
-                    const vmName = v['VM Name'] || v['VM'] || v['Name'];
-                    if(vmName) {
-                        vcpuDataMap[vmName] = {
-                            recommended95th: parseFloat(v['95th Percentile % (recommended)'] || v['95th Percentile'] || 0),
-                            peakPercent: parseFloat(v['Peak %'] || v['Peak'] || 0),
-                            avgPercent: parseFloat(v['Average %'] || v['Average'] || 0)
-                        };
-                    }
-                });
-
-                const vdiskAggregationMap = {};
-                vdiskTabList.forEach(d => {
-                    const vmName = d['VM'] || d['VM Name'] || d['Name'];
-                    if (vmName) {
-                        const diskMiB = parseFloat(d['Capacity MiB'] || d['Capacity (MiB)'] || d['Capacity'] || 0);
-                        vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
-                    }
-                });
-
-                const partConfigMap = {}, partConsumedMap = {};
-                partitionList.forEach(p => {
-                    const vmName = p['VM'] || p['VM Name'] || p['Name'];
-                    if (vmName) {
-                        const capMiB = parseFloat(p['Capacity MiB'] || p['Capacity (MiB)'] || p['Capacity'] || 0);
-                        const consumedMiB = parseFloat(p['Consumed MiB'] || p['Consumed (MiB)'] || p['Consumed'] || 0);
-                        partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
-                        partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
-                    }
-                });
-
-                const optimizedVmList = vmListTab.map(vm => {
-                    const name = vm['VM Name'] || vm['VM'] || vm['Name'];
-                    const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || 0);
-                    const ramGB = ramMiB / 1024;
-                    const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || 0);
-                    const finalDiskMiB = vdiskAggregationMap[name] !== undefined ? vdiskAggregationMap[name] : fallbackDiskMiB;
-                    const cpuProfile = vcpuDataMap[name] || { recommended95th: 0, peakPercent: 0, avgPercent: 0 };
-
-                    return {
-                        name: name || 'Unknown Asset',
-                        state: vm['Power State'] || vm['Powerstate'] || vm['State'] || 'Unknown',
-                        os: vm['Guest OS'] || vm['Guest Operating System'] || vm['OS'] || 'Other',
-                        vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || 0),
-                        ramGB: ramGB,
-                        vdiskCapMiB: finalDiskMiB,
-                        cpu95th: cpuProfile.recommended95th,
-                        cpuPeak: cpuProfile.peakPercent,
-                        cpuAvg: cpuProfile.avgPercent,
-                        partitionConfigMiB: partConfigMap[name] || 0,
-                        partitionConsumedMiB: partConsumedMap[name] || 0
-                    };
-                });
-
-                window.environmentCache.vmRollup = optimizedVmList;
-                window.environmentCache.rawHostsMetadata = hostList;
-
-                document.getElementById('welcomeState').classList.add('hidden');
-                document.getElementById('dashboardState').classList.remove('hidden');
-
-                compileKpiPanels(dcList.length, clusterList.length, hostList.length, optimizedVmList, 0);
-                renderSnapshotRiskRegister(snapList);
-                renderPhysicalFleetRegister(hostList);
-                renderWorkloadLedger(optimizedVmList);
-            } catch (err) {
-                alert("Failed parsing site arrays: " + err.message);
-            }
+            } catch(err) { alert("Failed constructing directory mapping."); }
         }
 
         async function scanAndRenderFileChips() {
@@ -714,6 +507,222 @@
                 document.getElementById('welcomeState').classList.remove('hidden');
                 document.getElementById('dashboardState').classList.add('hidden');
             }
+        }
+
+        async function removeSpecificSiteFile(fileKey) {
+            const confirmFileDel = confirm(`Delete snapshot "${fileKey}"?`);
+            if(!confirmFileDel) return;
+
+            try {
+                const storageFileName = `${fileKey.replace(/ /g, '_')}.json`;
+                await activeProjectDirectoryHandle.removeEntry(storageFileName);
+                document.getElementById('dashboardState').classList.add('hidden');
+                document.getElementById('welcomeState').classList.remove('hidden');
+                await scanAndRenderFileChips();
+            } catch(err) { alert("Failed deleting record."); }
+        }
+
+        async function loadCachedSiteFile(fileKey) {
+            try {
+                const handle = currentLoadedFilesMap[fileKey];
+                const file = await handle.getFile();
+                const text = await file.text();
+                const stateObj = JSON.parse(text);
+
+                window.environmentCache = stateObj.cache;
+                window.environmentCache.rawHostsMetadata = stateObj.raw.hosts || [];
+                
+                document.getElementById('welcomeState').classList.add('hidden');
+                document.getElementById('dashboardState').classList.remove('hidden');
+
+                compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup, stateObj.kpis.gpus);
+                renderSnapshotRiskRegister(stateObj.raw.snaps);
+                renderPhysicalFleetRegister(stateObj.raw.hosts);
+                renderWorkloadLedger(window.environmentCache.vmRollup);
+            } catch(err) { 
+                alert("Error loading cached snapshot entry."); 
+            }
+        }
+
+        function parseAuditWorkbook(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const promptName = prompt(`Please input a clear descriptor label for this workbook (e.g., Production, DR Site):`);
+            if (!promptName || !promptName.trim()) {
+                alert("Upload aborted: Name is mandatory.");
+                e.target.value = ''; 
+                return;
+            }
+
+            const d = new Date();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const yy = String(d.getFullYear()).slice(-2);
+            const dateStringToken = `${mm}.${dd}.${yy}`;
+
+            const baseCleanTitle = promptName.replace(/[^a-z0-9_ ]/gi, '').trim();
+            const finalDisplayTitle = `${baseCleanTitle} ${dateStringToken}`;
+            const cleanStorageFileKey = finalDisplayTitle.replace(/ /g, '_');
+
+            processFilePayload(file, cleanStorageFileKey);
+        }
+
+        function processFilePayload(file, storageKey) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const parsedSheets = {};
+                
+                workbook.SheetNames.forEach(name => {
+                    parsedSheets[name.trim()] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
+                });
+                
+                // Direct parsing assignment bindings
+                parsedSheets['vmlist'] = parsedSheets['vmList'] || [];
+                parsedSheets['vdisk'] = parsedSheets['vDisk'] || [];
+                parsedSheets['vpartition'] = parsedSheets['vPartition'] || [];
+                parsedSheets['vdatacenter'] = parsedSheets['vDataCenter'] || [];
+                parsedSheets['vcluster'] = parsedSheets['vCluster'] || [];
+                parsedSheets['vhost'] = parsedSheets['vHosts'] || [];
+                parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || [];
+                parsedSheets['vcpu'] = parsedSheets['vCPU'] || []; 
+
+                const diagTabsList = document.getElementById('diagTabsList');
+                diagTabsList.innerHTML = '';
+                workbook.SheetNames.forEach(name => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `Tab Label: <span class="text-indigo-400 font-bold">"${name}"</span>`;
+                    diagTabsList.appendChild(li);
+                });
+                
+                const diagColumnsMap = document.getElementById('diagColumnsMap');
+                diagColumnsMap.innerHTML = '';
+                
+                const renderHeadersDiag = (label, rowsArray) => {
+                    if(rowsArray && rowsArray.length > 0) {
+                        const headers = Object.keys(rowsArray[0]).slice(0, 8).join(', ');
+                        const div = document.createElement('div');
+                        div.innerHTML = `<span class="text-amber-400 font-bold">${label}:</span> <span class="text-slate-400">[ ${headers}... ]</span>`;
+                        diagColumnsMap.appendChild(div);
+                    }
+                };
+
+                renderHeadersDiag('vmList Rows', parsedSheets['vmlist']);
+                renderHeadersDiag('vDisk Rows', parsedSheets['vdisk']);
+                renderHeadersDiag('vPartition Rows', parsedSheets['vpartition']);
+                renderHeadersDiag('vCPU Rows', parsedSheets['vcpu']);
+                
+                document.getElementById('diagnosticConsole').classList.remove('hidden');
+                document.getElementById('diagnosticConsole').classList.add('flex');
+
+                processAndSaveVcenterSite(parsedSheets, storageKey);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processAndSaveVcenterSite(sheets, saveFileName) {
+            try {
+                const dcList = sheets['vdatacenter'] || [];
+                const clusterList = sheets['vcluster'] || [];
+                const hostList = sheets['vhost'] || [];
+                const vmListTab = sheets['vmlist'] || [];
+                const snapList = sheets['vsnapshot'] || [];
+                const partitionList = sheets['vpartition'] || [];
+                const vdiskTabList = sheets['vdisk'] || [];
+                const vcpuPerformanceList = sheets['vcpu'] || [];
+
+                // Re-engineered exact string token extraction maps
+                const vcpuDataMap = {};
+                vcpuPerformanceList.forEach(v => {
+                    const vmName = v['VM Name'] || v['VM'] || v['Name'];
+                    if(vmName) {
+                        vcpuDataMap[vmName] = {
+                            recommended95th: parseFloat(v['95th Percentile % (recommended)'] || v['95th Percentile %'] || v['95th Percentile'] || 0),
+                            peakPercent: parseFloat(v['Peak %'] || v['Peak'] || v['Max %'] || 0),
+                            avgPercent: parseFloat(v['Average %'] || v['Average'] || v['Avg %'] || 0)
+                        };
+                    }
+                });
+
+                const vdiskAggregationMap = {};
+                vdiskTabList.forEach(d => {
+                    const vmName = d['VM'] || d['VM Name'] || d['Name'];
+                    if (vmName) {
+                        const diskMiB = parseFloat(d['Capacity MiB'] || d['Capacity (MiB)'] || d['Capacity'] || 0);
+                        vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
+                    }
+                });
+
+                const partConfigMap = {}, partConsumedMap = {};
+                partitionList.forEach(p => {
+                    const vmName = p['VM'] || p['VM Name'] || p['Name'];
+                    if (vmName) {
+                        const capMiB = parseFloat(p['Capacity MiB'] || p['Capacity (MiB)'] || p['Capacity'] || 0);
+                        const consumedMiB = parseFloat(p['Consumed MiB'] || p['Consumed (MiB)'] || p['Consumed'] || 0);
+                        partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
+                        partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
+                    }
+                });
+
+                const optimizedVmList = vmListTab.map(vm => {
+                    const name = vm['VM Name'] || vm['VM'] || vm['Name'];
+                    const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || 0);
+                    const ramGB = ramMiB / 1024;
+                    const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || 0);
+                    const finalDiskMiB = vdiskAggregationMap[name] !== undefined ? vdiskAggregationMap[name] : fallbackDiskMiB;
+                    const cpuProfile = vcpuDataMap[name] || { recommended95th: 0, peakPercent: 0, avgPercent: 0 };
+
+                    return {
+                        name: name || 'Unknown Asset',
+                        state: vm['Power State'] || vm['Powerstate'] || vm['State'] || 'Unknown',
+                        os: vm['Guest OS'] || vm['Guest Operating System'] || vm['OS'] || 'Other',
+                        vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || 0),
+                        ramGB: ramGB,
+                        vdiskCapMiB: finalDiskMiB,
+                        
+                        // Core metrics ingestion fields
+                        cpu95th: cpuProfile.recommended95th,
+                        cpuPeak: cpuProfile.peakPercent,
+                        cpuAvg: cpuProfile.avgPercent,
+                        
+                        partitionConfigMiB: partConfigMap[name] || 0,
+                        partitionConsumedMiB: partConsumedMap[name] || 0
+                    };
+                });
+
+                window.environmentCache.vmRollup = optimizedVmList;
+                window.environmentCache.rawHostsMetadata = hostList;
+
+                document.getElementById('welcomeState').classList.add('hidden');
+                document.getElementById('dashboardState').classList.remove('hidden');
+
+                compileKpiPanels(dcList.length, clusterList.length, hostList.length, optimizedVmList, 0);
+                renderSnapshotRiskRegister(snapList);
+                renderPhysicalFleetRegister(hostList);
+                renderWorkloadLedger(optimizedVmList);
+                
+                writeSiteFileToDisk(saveFileName, {
+                    kpis: { dc: dcList.length, clusters: clusterList.length, hosts: hostList.length, gpus: 0 },
+                    cache: { vmRollup: optimizedVmList },
+                    raw: { clusters: clusterList, snaps: snapList, hosts: hostList }
+                });
+            } catch (err) {
+                alert("Failed parsing site layout definitions: " + err.message);
+            }
+        }
+
+        async function writeSiteFileToDisk(saveFileName, payload) {
+            if(!activeProjectDirectoryHandle) return;
+            try {
+                const finalName = `${saveFileName}.json`;
+                const fileHandle = await activeProjectDirectoryHandle.getFileHandle(finalName, { create: true });
+                const writableStream = await fileHandle.createWritable();
+                await writableStream.write(JSON.stringify(payload, null, 2));
+                await writableStream.close();
+                await scanAndRenderFileChips();
+            } catch (err) { console.error(err); }
         }
 
         function compileKpiPanels(dc, clusters, hosts, vms, gpus) {
@@ -892,7 +901,7 @@
             const styledWorkbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempVmTable, { raw: true }), "Virtual Machine Details");
             XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempHostTable, { raw: true }), "Physical Fleet Inventory");
-            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.0.7.xlsx`);
+            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.0.8.xlsx`);
         }
     </script>
 </body>
