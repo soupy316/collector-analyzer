@@ -137,7 +137,7 @@
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total Configured VMs</p><p id="kpiVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Powered On VMs</p><p id="kpiActiveVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
                 
-                <!-- UPGRADED: Dynamic Hot CPU Action Panel Selector -->
+                <!-- UPGRADED: Dynamic Hot CPU Action Panel Selector Widget -->
                 <div id="cardHotCpuTrigger" class="bg-slate-900/40 border border-rose-900/40 hover:border-rose-500/50 p-4 rounded-xl shadow-sm cursor-pointer transition-all hover:bg-slate-900/80 group">
                     <div class="flex items-center justify-between">
                         <p class="text-[10px] text-rose-400 font-bold uppercase tracking-wider flex items-center gap-1">
@@ -149,7 +149,7 @@
                 </div>
             </div>
 
-            <!-- HIDDEN EXPANDABLE WIDGET: Reveals the specific Heavy Workload Registry inline -->
+            <!-- HIDDEN EXPANDABLE REGISTRY BLOCK -->
             <div id="hotCpuDropdownPanel" class="hidden bg-rose-950/10 border border-rose-900/50 rounded-2xl p-5 space-y-3 shadow-inner animate-fadeIn">
                 <div>
                     <h3 class="text-sm font-bold text-rose-400 flex items-center gap-2">⚠️ Compute Risk Node Registry</h3>
@@ -162,7 +162,7 @@
                                 <th class="p-3">VM Name</th>
                                 <th class="p-3 text-center">Power State</th>
                                 <th class="p-3 text-center">Allocated vCPUs</th>
-                                <th class="p-3 text-right">95th % CPU Load</th>
+                                <th class="p-3 text-right">95th % CPU Usage</th>
                                 <th class="p-3 text-right">Assigned Memory</th>
                             </tr>
                         </thead>
@@ -271,7 +271,7 @@
                                 <th class="px-6 py-3.5">State</th>
                                 <th class="px-6 py-3.5 text-center">vCPUs</th>
                                 <th class="px-6 py-3.5 text-right">Memory (GB)</th>
-                                <th class="px-6 py-3.5 text-right">95th % CPU</th>
+                                <th class="px-6 py-3.5 text-right">95th % CPU Usage</th>
                                 <th class="px-6 py-3.5 text-right">Total vDisk Capacity (GB)</th>
                                 <th class="px-6 py-3.5 text-right">vPartition Configured (GB)</th>
                                 <th class="px-6 py-3.5 text-right">vPartition Consumed (GB)</th>
@@ -303,7 +303,6 @@
         document.getElementById('txtCustomerSearch').addEventListener('input', filterCustomerDropdown);
         document.getElementById('btnExportDataPackage').addEventListener('click', triggerExcelDataExportSequence);
         
-        // Dynamic slide toggle layout configuration for the new compute risk registry block
         document.getElementById('cardHotCpuTrigger').addEventListener('click', () => {
             const block = document.getElementById('hotCpuDropdownPanel');
             block.classList.toggle('hidden');
@@ -503,7 +502,7 @@
                     chipGroup.className = "inline-flex items-center bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-sm";
 
                     const selectBtn = document.createElement('button');
-                    selectBtn.className = "px-3 py-1 text-slate-200 text-xs font-medium hover:bg-slate-700 transition-colors cursor-pointer";
+                    selectBtn.className = "px-3 py-1 text-slate-200 text-xs font-medium hover:bg-slate-750 transition-colors cursor-pointer";
                     selectBtn.innerText = fileKey;
                     selectBtn.onclick = () => loadCachedSiteFile(fileKey);
 
@@ -635,6 +634,7 @@
                     parsedSheets[name.trim()] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
                 });
                 
+                // REFACTORED IN v1.0.5: Enforces direct tab routing paths for case-sensitive workbook configurations
                 parsedSheets['vmlist'] = parsedSheets['vmList'] || [];
                 parsedSheets['vdisk'] = parsedSheets['vDisk'] || [];
                 parsedSheets['vpartition'] = parsedSheets['vPartition'] || [];
@@ -642,7 +642,7 @@
                 parsedSheets['vcluster'] = parsedSheets['vCluster'] || [];
                 parsedSheets['vhost'] = parsedSheets['vHosts'] || [];
                 parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || [];
-                parsedSheets['vcpu'] = parsedSheets['vCPU'] || []; // Pull custom vCPU performance profiling tab matrices
+                parsedSheets['vcpu'] = parsedSheets['vCPU'] || []; // Capture separate vCPU load workspace tab array layers directly
 
                 const diagTabsList = document.getElementById('diagTabsList');
                 diagTabsList.innerHTML = '';
@@ -671,6 +671,7 @@
                 renderHeadersDiag('vmList Rows', parsedSheets['vmlist']);
                 renderHeadersDiag('vDisk Rows', parsedSheets['vdisk']);
                 renderHeadersDiag('vPartition Rows', parsedSheets['vpartition']);
+                renderHeadersDiag('vCPU Performance Rows', parsedSheets['vcpu']);
                 
                 document.getElementById('diagnosticConsole').classList.remove('hidden');
                 document.getElementById('diagnosticConsole').classList.add('flex');
@@ -691,12 +692,13 @@
                 const vdiskTabList = sheets['vdisk'] || [];
                 const vcpuPerformanceList = sheets['vcpu'] || [];
 
-                // REFACTORED IN v1.0.5: Target your explicit "CPU MHz" profile or 95th Percentile custom mapping formula targets accurately
-                const cpuMetricsProfileMap = {};
+                // REFACTORED IN v1.0.5: Iterates across separate vCPU sheet records to match your exact performance metrics formula targets
+                const cpuPerformanceLookupMap = {};
                 vcpuPerformanceList.forEach(v => {
                     const vmName = v['VM Name'] || v['VM'] || v['Name'];
                     if(vmName) {
-                        cpuMetricsProfileMap[vmName] = parseFloat(v['CPU MHz'] || v['Peak %'] || v['95th Percentile % (recommended)'] || v['Average %'] || 0);
+                        // Captures CPU MHz or overall load strings directly out of row arrays safely
+                        cpuPerformanceLookupMap[vmName] = parseFloat(v['CPU MHz'] || v['Overall CPU Usage'] || v['CPU usage'] || v['Peak %'] || v['CPU %'] || 0);
                     }
                 });
 
@@ -737,7 +739,7 @@
                         vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || 0),
                         ramGB: ramGB,
                         vdiskCapMiB: finalDiskMiB,
-                        peakCpuMHz: cpuMetricsProfileMap[name] || 0, // Bind your explicit CPU load parameters
+                        cpuPerformanceValue: cpuPerformanceLookupMap[name] || 0, // Ingest cross-referenced CPU core utilization layers
                         partitionConfigMiB: partConfigMap[name] || 0,
                         partitionConsumedMiB: partConsumedMap[name] || 0
                     };
@@ -793,11 +795,11 @@
             const stoppedVMs = vms.filter(v => !String(v.state || '').toLowerCase().includes('on'));
             document.getElementById('kpiActiveVMs').innerText = runningVMs.length;
 
-            // REFACTORED IN v1.0.5: Dynamically slice and aggregate heavy/contended workloads using your thresholds
-            const hotCpuNodeList = vms.filter(v => v.vcpus >= 16 || v.peakCpuMHz >= 80);
+            // REFACTORED IN v1.0.5: Dynamically filter heavy/contended risk nodes matching thresholds (>=16 vCPUs or >=80 usage metrics)
+            const hotCpuNodeList = vms.filter(v => v.vcpus >= 16 || v.cpuPerformanceValue >= 80);
             document.getElementById('kpiHotCpuCount').innerText = hotCpuNodeList.length;
 
-            // Render inline drop-down registry lists for deep inspection analysis
+            // Paint inline drop-down registry risk list elements
             const hotTbody = document.getElementById('hotCpuTableBody');
             hotTbody.innerHTML = '';
             if(hotCpuNodeList.length === 0) {
@@ -812,7 +814,7 @@
                         <td class="p-3 font-bold text-slate-100">${v.name}</td>
                         <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] ${isRunning ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-500'}">${v.state}</span></td>
                         <td class="p-3 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus} Cores</td>
-                        <td class="p-3 text-right font-mono ${v.peakCpuMHz >= 80 ? 'text-rose-400 font-black' : ''}">${v.peakCpuMHz > 0 ? v.peakCpuMHz.toFixed(1) + ' MHz' : '-'}</td>
+                        <td class="p-3 text-right font-mono ${v.cpuPerformanceValue >= 80 ? 'text-rose-400 font-black' : ''}">${v.cpuPerformanceValue > 0 ? v.cpuPerformanceValue.toFixed(1) + '%' : '-'}</td>
                         <td class="p-3 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)} GB</td>
                     `;
                     hotTbody.appendChild(tr);
@@ -885,7 +887,7 @@
             });
         }
 
-        // REFACTORED IN v1.0.5: Pulls data points straight out of your spreadsheet arrays natively
+        // REFACTORED IN v1.0.5: Injects accurate performance data points natively into main ledger elements
         function renderWorkloadLedger(vms) {
             const tbody = document.getElementById('vmTableBody'); const query = document.getElementById('vmSearch').value.toLowerCase(); tbody.innerHTML = '';
             vms.forEach(v => {
@@ -900,9 +902,9 @@
                 const vpartConfigStr = pConfigGB > 0 ? `${pConfigGB.toFixed(1)}` : '-';
                 const vpartConsumedStr = pConsumedGB > 0 ? `${pConsumedGB.toFixed(1)}` : '-';
 
-                // Display your CPU parameters accurately in rows
-                const cpuClass = v.peakCpuMHz >= 80 ? 'text-rose-400 font-bold' : 'text-slate-400';
-                const cpuLoadDisplayStr = v.peakCpuMHz > 0 ? v.peakCpuMHz.toFixed(0) + ' MHz' : '-';
+                // Display dynamic usage levels with tailored styling colors
+                const cpuClass = v.cpuPerformanceValue >= 80 ? 'text-rose-400 font-bold animate-pulse' : 'text-slate-400';
+                const cpuLoadDisplayStr = v.cpuPerformanceValue > 0 ? v.cpuPerformanceValue.toFixed(1) + '%' : '-';
 
                 tr.innerHTML = `
                     <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
@@ -934,7 +936,7 @@
                 <th style="${headerStyleString}">Power State</th>
                 <th style="${headerStyleString}">vCPUs</th>
                 <th style="${headerStyleString}">Allocated RAM (GB)</th>
-                <th style="${headerStyleString}">95th % CPU Load</th>
+                <th style="${headerStyleString}">95th % CPU Usage</th>
                 <th style="${headerStyleString}">Total vDisk Capacity (GB)</th>
                 <th style="${headerStyleString}">vPartition Configured (GB)</th>
                 <th style="${headerStyleString}">vPartition Consumed (GB)</th>
@@ -947,7 +949,7 @@
                     <td style="${dataStyleString}; text-align: center;">${v.state}</td>
                     <td style="${dataStyleString}; text-align: center;">${v.vcpus}</td>
                     <td style="${dataStyleString}; text-align: right;">${v.ramGB.toFixed(1)}</td>
-                    <td style="${dataStyleString}; text-align: right;">${v.peakCpuMHz > 0 ? v.peakCpuMHz.toFixed(0) + ' MHz' : '-'}</td>
+                    <td style="${dataStyleString}; text-align: right;">${v.cpuPerformanceValue > 0 ? v.cpuPerformanceValue.toFixed(1) + '%' : '-'}</td>
                     <td style="${dataStyleString}; text-align: right;">${(v.vdiskCapMiB / 1024).toFixed(1)}</td>
                     <td style="${dataStyleString}; text-align: right;">${v.partitionConfigMiB > 0 ? (v.partitionConfigMiB / 1024).toFixed(1) : '0.0'}</td>
                     <td style="${dataStyleString}; text-align: right;">${v.partitionConsumedMiB > 0 ? (v.partitionConsumedMiB / 1024).toFixed(1) : '0.0'}</td>
@@ -964,7 +966,6 @@
                 <th style="${headerStyleString}">Processor Model Specifications</th>
                 <th style="${headerStyleString}">Core Clock Metric (GHz)</th>
                 <th style="${headerStyleString}">Physical Capacity RAM (GB)</th>
-                <th style="${headerStyleString}">Active NVIDIA GPU Cores Count</th>
             </tr></thead><tbody>`;
 
             hosts.forEach(h => {
@@ -979,7 +980,6 @@
                     <td style="${dataStyleString}">${h['CPU Model'] || h['Processor Type'] || '-'}</td>
                     <td style="${dataStyleString}; text-align: center;">${speedGHz > 0 ? speedGHz.toFixed(2) : '-'}</td>
                     <td style="${dataStyleString}; text-align: right;">${ramGB > 0 ? Math.round(ramGB) : '-'}</td>
-                    <td style="${dataStyleString}; text-align: center;">${parseInt(h['GPU Count'] || h['GPUCount'] || 0)}</td>
                 </tr>`;
             });
             hostHtml += "</tbody>";
