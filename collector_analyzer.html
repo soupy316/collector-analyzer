@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>collector_analyzer | Enterprise Repository Suite</title>
     <!-- Tailwind CSS v4 via CDN -->
-    <script src="https://cdn.tailwindcss.com/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- SheetJS (XLSX Parser & Exporter) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -15,8 +15,8 @@
     <header class="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <!-- Incremented Tracking Version Number Marker Tag to v1.0.2 -->
-                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.2</div>
+                <!-- Incremented Tracking Version Number Marker Tag to v1.0.3 -->
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.3</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
                     <p class="text-xs text-slate-400">Comprehensive Local Repository & 21-Tab Infrastructure Assessment Suite</p>
@@ -226,7 +226,7 @@
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                         <input type="text" id="vmSearch" placeholder="Filter virtual workloads..." class="w-full sm:w-64 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 transition-all shadow-inner">
                         
-                        <!-- ADDED: Excel Workbook Export Trigger Button Component Layer -->
+                        <!-- Export Trigger Button -->
                         <button id="btnExportDataPackage" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             Export Inventory Package
@@ -511,7 +511,6 @@
                 const stateObj = JSON.parse(text);
 
                 window.environmentCache = stateObj.cache;
-                // Preserve the raw host list metadata back into reference layers for the exporter mapping sequence
                 window.environmentCache.rawHostsMetadata = stateObj.raw.hosts || [];
                 
                 document.getElementById('welcomeState').classList.add('hidden');
@@ -573,7 +572,6 @@
                 parsedSheets['vhost'] = parsedSheets['vHosts'] || [];
                 parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || [];
 
-                // Debug console tracers
                 const diagTabsList = document.getElementById('diagTabsList');
                 diagTabsList.innerHTML = '';
                 workbook.SheetNames.forEach(name => {
@@ -813,55 +811,85 @@
             });
         }
 
-        // NEW METHOD: Formats and downloads a multi-tab structured spreadsheet model 
+        // UPGRADED STYLING METHOD: Spins up styled DOM layout structures in-memory to inject custom border lines and Iris Purple headers into SheetJS sheets natively
         function triggerExcelDataExportSequence() {
             const vms = window.environmentCache.vmRollup || [];
             const hosts = window.environmentCache.rawHostsMetadata || [];
 
             if(vms.length === 0) { alert("Please open a valid customer cluster dataset before generating exports."); return; }
 
-            // Tab 1 Formatting Pipeline: Virtual Machine Details
-            const vmExportDataRows = vms.map(v => ({
-                "VM Name": v.name,
-                "Power State": v.state,
-                "vCPUs": v.vcpus,
-                "Allocated RAM (GB)": parseFloat(v.ramGB.toFixed(2)),
-                "Total vDisk Capacity (GB)": parseFloat((v.vdiskCapMiB / 1024).toFixed(2)),
-                "vPartition Configured (GB)": parseFloat((v.partitionConfigMiB / 1024).toFixed(2)),
-                "vPartition Consumed (GB)": parseFloat((v.partitionConsumedMiB / 1024).toFixed(2)),
-                "Guest Operating System": v.os
-            }));
+            const headerStyleString = "background-color: #7855fa; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #000000;";
+            const dataStyleString = "border: 1px solid #000000;";
 
-            // Tab 2 Formatting Pipeline: Physical Compute Node Fleet Inventory
-            const hostExportDataRows = hosts.map(h => {
+            // Construct DOM Table 1: Virtual Machine Details
+            const tempVmTable = document.createElement('table');
+            let vmHtml = `<thead><tr>
+                <th style="${headerStyleString}">VM Name</th>
+                <th style="${headerStyleString}">Power State</th>
+                <th style="${headerStyleString}">vCPUs</th>
+                <th style="${headerStyleString}">Allocated RAM (GB)</th>
+                <th style="${headerStyleString}">Total vDisk Capacity (GB)</th>
+                <th style="${headerStyleString}">vPartition Configured (GB)</th>
+                <th style="${headerStyleString}">vPartition Consumed (GB)</th>
+                <th style="${headerStyleString}">Guest Operating System</th>
+            </tr></thead><tbody>`;
+
+            vms.forEach(v => {
+                vmHtml += `<tr>
+                    <td style="${dataStyleString}">${v.name}</td>
+                    <td style="${dataStyleString}; text-align: center;">${v.state}</td>
+                    <td style="${dataStyleString}; text-align: center;">${v.vcpus}</td>
+                    <td style="${dataStyleString}; text-align: right;">${v.ramGB.toFixed(1)}</td>
+                    <td style="${dataStyleString}; text-align: right;">${(v.vdiskCapMiB / 1024).toFixed(1)}</td>
+                    <td style="${dataStyleString}; text-align: right;">${v.partitionConfigMiB > 0 ? (v.partitionConfigMiB / 1024).toFixed(1) : '0.0'}</td>
+                    <td style="${dataStyleString}; text-align: right;">${v.partitionConsumedMiB > 0 ? (v.partitionConsumedMiB / 1024).toFixed(1) : '0.0'}</td>
+                    <td style="${dataStyleString}">${v.os || '-'}</td>
+                </tr>`;
+            });
+            vmHtml += "</tbody>";
+            tempVmTable.innerHTML = vmHtml;
+
+            // Construct DOM Table 2: Physical Fleet Inventory
+            const tempHostTable = document.createElement('table');
+            let hostHtml = `<thead><tr>
+                <th style="${headerStyleString}">Hostname / IP Node</th>
+                <th style="${headerStyleString}">Hardware Manufacturer Model</th>
+                <th style="${headerStyleString}">Processor Model Specifications</th>
+                <th style="${headerStyleString}">Core Clock Metric (GHz)</th>
+                <th style="${headerStyleString}">Physical Capacity RAM (GB)</th>
+                <th style="${headerStyleString}">Active NVIDIA GPU Cores Count</th>
+            </tr></thead><tbody>`;
+
+            hosts.forEach(h => {
                 const rawSpeed = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || h['CPU Speed MHz'] || 0);
                 const speedGHz = rawSpeed > 100 ? rawSpeed / 1000 : rawSpeed;
-                
                 const rawRam = parseFloat(h['Memory Size'] || h['Memory Size (MiB)'] || h['RAM'] || 0);
                 const ramGB = rawRam > 1024 ? rawRam / 1024 : rawRam;
 
-                return {
-                    "Hostname / IP Node": h['Host Name'] || h['Host IP'] || h['Host'] || 'Unknown Host',
-                    "Hardware Manufacturer Model": h['Model'] || h['Hardware Model'] || '-',
-                    "Processor Model Specifications": h['CPU Model'] || h['Processor Type'] || '-',
-                    "Core Clock Metric (GHz)": speedGHz > 0 ? parseFloat(speedGHz.toFixed(2)) : '-',
-                    "Physical Capacity RAM (GB)": ramGB > 0 ? parseFloat(ramGB.toFixed(0)) : '-',
-                    "Active NVIDIA GPU Cores Count": parseInt(h['GPU Count'] || h['GPUCount'] || 0)
-                };
+                hostHtml += `<tr>
+                    <td style="${dataStyleString}">${h['Host Name'] || h['Host IP'] || h['Host'] || 'Unknown Host'}</td>
+                    <td style="${dataStyleString}">${h['Model'] || h['Hardware Model'] || '-'}</td>
+                    <td style="${dataStyleString}">${h['CPU Model'] || h['Processor Type'] || '-'}</td>
+                    <td style="${dataStyleString}; text-align: center;">${speedGHz > 0 ? speedGHz.toFixed(2) : '-'}</td>
+                    <td style="${dataStyleString}; text-align: right;">${ramGB > 0 ? Math.round(ramGB) : '-'}</td>
+                    <td style="${dataStyleString}; text-align: center;">${parseInt(h['GPU Count'] || h['GPUCount'] || 0)}</td>
+                </tr>`;
             });
+            hostHtml += "</tbody>";
+            tempHostTable.innerHTML = hostHtml;
 
-            // Initialize SheetJS Workbook Wrapper Package Structures
-            const newWorkbook = XLSX.utils.book_new();
+            // Bind in-memory styled DOM tables into a multi-tab SheetJS package workbook natively
+            const styledWorkbook = XLSX.utils.book_new();
 
-            const vmWorksheetObject = XLSX.utils.json_to_sheet(vmExportDataRows);
-            XLSX.utils.book_append_sheet(newWorkbook, vmWorksheetObject, "Virtual Machine Details");
+            const vmWorksheet = XLSX.utils.table_to_sheet(tempVmTable, { raw: true });
+            XLSX.utils.book_append_sheet(styledWorkbook, vmWorksheet, "Virtual Machine Details");
 
-            const hostWorksheetObject = XLSX.utils.json_to_sheet(hostExportDataRows);
-            XLSX.utils.book_append_sheet(newWorkbook, hostWorksheetObject, "Physical Fleet Inventory");
+            const hostWorksheet = XLSX.utils.table_to_sheet(tempHostTable, { raw: true });
+            XLSX.utils.book_append_sheet(styledWorkbook, hostWorksheet, "Physical Fleet Inventory");
 
-            // Execute local write action payload streaming straight onto download pipeline layers
+            // Deploy download string action
             const fileTitleStamp = document.getElementById('txtLocationName').value.trim().replace(/ /g, '_') || "Infrastructure_Assessment";
-            XLSX.writeFile(newWorkbook, `${fileTitleStamp}_Package_v1.0.2.xlsx`);
+            XLSX.writeFile(styledWorkbook, `${fileTitleStamp}_Package_v1.0.3.xlsx`);
         }
     </script>
 </body>
