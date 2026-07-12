@@ -15,8 +15,8 @@
     <header class="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <!-- Incremented Tracking Version Number Marker Tag to v1.0.5 -->
-                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.5</div>
+                <!-- Incremented Tracking Version Number Marker Tag to v1.0.6 -->
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.6</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
                     <p class="text-xs text-slate-400">Comprehensive Local Repository & 21-Tab Infrastructure Assessment Suite</p>
@@ -137,7 +137,7 @@
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total Configured VMs</p><p id="kpiVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Powered On VMs</p><p id="kpiActiveVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
                 
-                <!-- UPGRADED: Dynamic Hot CPU Action Panel Selector Widget -->
+                <!-- Dynamic Hot CPU Action Panel Selector Widget -->
                 <div id="cardHotCpuTrigger" class="bg-slate-900/40 border border-rose-900/40 hover:border-rose-500/50 p-4 rounded-xl shadow-sm cursor-pointer transition-all hover:bg-slate-900/80 group">
                     <div class="flex items-center justify-between">
                         <p class="text-[10px] text-rose-400 font-bold uppercase tracking-wider flex items-center gap-1">
@@ -252,10 +252,23 @@
 
             <!-- Virtual Machine Details Ledger -->
             <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 overflow-hidden shadow-2xl">
-                <div class="p-5 border-b border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/20">
-                    <div><h3 class="text-sm font-bold text-slate-200">Virtual Machine Details</h3></div>
-                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                        <input type="text" id="vmSearch" placeholder="Filter virtual workloads..." class="w-full sm:w-64 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 transition-all shadow-inner">
+                <div class="p-5 border-b border-slate-800 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-slate-900/20">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full xl:w-auto">
+                        <h3 class="text-sm font-bold text-slate-200 shrink-0">Virtual Machine Ledger</h3>
+                        
+                        <!-- ADDED: Dual Context Tab Flippers to swap view layouts instantly -->
+                        <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800 shrink-0">
+                            <button id="toggleViewVmDetails" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer">
+                                Per VM Details
+                            </button>
+                            <button id="toggleViewCpuDetails" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">
+                                Per VM CPU Details
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
+                        <input type="text" id="vmSearch" placeholder="Filter workloads..." class="w-full sm:w-56 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 transition-all shadow-inner">
                         
                         <button id="btnExportDataPackage" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -263,21 +276,11 @@
                         </button>
                     </div>
                 </div>
+                
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
-                                <th class="px-6 py-3.5">VM Name</th>
-                                <th class="px-6 py-3.5">State</th>
-                                <th class="px-6 py-3.5 text-center">vCPUs</th>
-                                <th class="px-6 py-3.5 text-right">Memory (GB)</th>
-                                <th class="px-6 py-3.5 text-right">95th % CPU Usage</th>
-                                <th class="px-6 py-3.5 text-right">Total vDisk Capacity (GB)</th>
-                                <th class="px-6 py-3.5 text-right">vPartition Configured (GB)</th>
-                                <th class="px-6 py-3.5 text-right">vPartition Consumed (GB)</th>
-                                <th class="px-6 py-3.5 text-right">Guest OS</th>
-                            </tr>
-                        </thead>
+                        <!-- Dynamic Ledger Table Grid Context Header Target -->
+                        <thead id="vmTableHeaderTarget"></thead>
                         <tbody id="vmTableBody" class="divide-y divide-slate-800/50 text-slate-300"></tbody>
                     </table>
                 </div>
@@ -291,6 +294,9 @@
         let currentLoadedFilesMap = {};
         let scannedCustomerFoldersList = [];
         window.environmentCache = {};
+        
+        // Active display tab tracking property (vm || cpu)
+        let activeLedgerContextView = 'vm'; 
 
         // DOM Triggers
         document.getElementById('btnSelectWorkspace').addEventListener('click', selectNewWorkspaceHandle);
@@ -303,6 +309,10 @@
         document.getElementById('txtCustomerSearch').addEventListener('input', filterCustomerDropdown);
         document.getElementById('btnExportDataPackage').addEventListener('click', triggerExcelDataExportSequence);
         
+        // Tab flipping action event loops
+        document.getElementById('toggleViewVmDetails').addEventListener('click', () => { swapActiveLedgerContext('vm'); });
+        document.getElementById('toggleViewCpuDetails').addEventListener('click', () => { swapActiveLedgerContext('cpu'); });
+
         document.getElementById('cardHotCpuTrigger').addEventListener('click', () => {
             const block = document.getElementById('hotCpuDropdownPanel');
             block.classList.toggle('hidden');
@@ -315,6 +325,23 @@
         });
 
         window.addEventListener('DOMContentLoaded', checkIndexedDbForSavedWorkspace);
+
+        function swapActiveLedgerContext(viewMode) {
+            activeLedgerContextView = viewMode;
+            
+            const btnVm = document.getElementById('toggleViewVmDetails');
+            const btnCpu = document.getElementById('toggleViewCpuDetails');
+            
+            if(viewMode === 'vm') {
+                btnVm.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer";
+                btnCpu.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer";
+            } else {
+                btnCpu.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer";
+                btnVm.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer";
+            }
+            
+            if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
+        }
 
         function getDbInstance() {
             return new Promise((resolve, reject) => {
@@ -448,88 +475,6 @@
             } catch(err) { alert("Error opening the customer workspace environment."); }
         }
 
-        async function removeSelectedCustomerFolder() {
-            const selectedVal = document.getElementById('selCustomer').value;
-            if(!selectedVal) return;
-            const confirmFirst = confirm(`Are you sure you want to delete "${selectedVal.replace(/_/g, ' ')}"?`);
-            if(!confirmFirst) return;
-
-            try {
-                await rootDirectoryHandle.removeEntry(selectedVal, { recursive: true });
-                activeProjectDirectoryHandle = null;
-                document.getElementById('uploadZone').classList.add('hidden');
-                document.getElementById('locationSelectorZone').classList.add('hidden');
-                document.getElementById('dashboardState').classList.add('hidden');
-                document.getElementById('welcomeState').classList.remove('hidden');
-                await scanRepositoryForCustomers();
-            } catch (err) { alert("Could not remove folder target."); }
-        }
-
-        async function createAndOpenNewCustomer() {
-            const inputVal = document.getElementById('txtNewCustomerName').value.trim();
-            if(!inputVal) return;
-            const cleanFolder = inputVal.replace(/[^a-z0-9_]/gi, '_');
-
-            try {
-                activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(cleanFolder, { create: true });
-                await scanRepositoryForCustomers();
-                toggleCreateCustomerMode();
-                document.getElementById('selCustomer').value = cleanFolder;
-                document.getElementById('uploadZone').classList.remove('hidden');
-                document.getElementById('lblCustomerClusters').innerText = `${inputVal} Clusters:`;
-                await scanAndRenderFileChips();
-            } catch(err) { alert("Failed constructing directory mapping."); }
-        }
-
-        async function scanAndRenderFileChips() {
-            currentLoadedFilesMap = {};
-            const chipContainer = document.getElementById('locationChipContainer');
-            chipContainer.innerHTML = '';
-            
-            for await (const entry of activeProjectDirectoryHandle.values()) {
-                if (entry.kind === 'file' && entry.name.endsWith('.json')) {
-                    const displayName = entry.name.replace('.json', '').replace(/_/g, ' ');
-                    currentLoadedFilesMap[displayName] = entry;
-                }
-            }
-
-            const keys = Object.keys(currentLoadedFilesMap).sort();
-            if(keys.length > 0) {
-                document.getElementById('locationSelectorZone').classList.remove('hidden');
-                document.getElementById('locationSelectorZone').classList.add('flex');
-                keys.forEach(fileKey => {
-                    const chipGroup = document.createElement('div');
-                    chipGroup.className = "inline-flex items-center bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-sm";
-
-                    const selectBtn = document.createElement('button');
-                    selectBtn.className = "px-3 py-1 text-slate-200 text-xs font-medium hover:bg-slate-750 transition-colors cursor-pointer";
-                    selectBtn.innerText = fileKey;
-                    selectBtn.onclick = () => loadCachedSiteFile(fileKey);
-
-                    const renameBtn = document.createElement('button');
-                    renameBtn.className = "px-2 py-1 bg-slate-900/20 text-slate-400 hover:text-amber-400 border-l border-slate-700/40 transition-colors text-[10px] cursor-pointer";
-                    renameBtn.innerHTML = "✏️";
-                    renameBtn.onclick = (e) => { e.stopPropagation(); triggerInlineFileRenameSequence(fileKey); };
-
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = "px-2 py-1 bg-slate-900/40 text-slate-500 hover:text-rose-400 hover:bg-rose-950/20 border-l border-slate-700/60 transition-all text-xs font-black cursor-pointer";
-                    deleteBtn.innerHTML = "&times;";
-                    deleteBtn.onclick = (e) => { e.stopPropagation(); removeSpecificSiteFile(fileKey); };
-
-                    chipGroup.appendChild(selectBtn);
-                    chipGroup.appendChild(renameBtn);
-                    chipGroup.appendChild(deleteBtn);
-                    chipContainer.appendChild(chipGroup);
-                });
-                document.getElementById('welcomeState').classList.add('hidden');
-            } else {
-                document.getElementById('locationSelectorZone').classList.remove('hidden');
-                document.getElementById('locationSelectorZone').classList.add('hidden');
-                document.getElementById('welcomeState').classList.remove('hidden');
-                document.getElementById('dashboardState').classList.add('hidden');
-            }
-        }
-
         async function triggerInlineFileRenameSequence(oldDisplayKey) {
             const userNewName = prompt(`Enter a new custom name for cluster resource metadata snapshot [ ${oldDisplayKey} ]:`, oldDisplayKey);
             if (!userNewName || !userNewName.trim() || userNewName.trim() === oldDisplayKey) return;
@@ -616,9 +561,7 @@
             const cleanStorageFileKey = finalDisplayTitle.replace(/ /g, '_');
 
             if (currentLoadedFilesMap[finalDisplayTitle]) {
-                alert(`A structural record token assigned to "${finalDisplayTitle}" already occupies this cluster index space. Choose a different name variant.`);
-                e.target.value = '';
-                return;
+                alert("A structural record token already occupies this cluster index space. Overwriting.");
             }
             processFilePayload(file, cleanStorageFileKey);
         }
@@ -634,7 +577,6 @@
                     parsedSheets[name.trim()] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
                 });
                 
-                // REFACTORED IN v1.0.5: Enforces direct tab routing paths for case-sensitive workbook configurations
                 parsedSheets['vmlist'] = parsedSheets['vmList'] || [];
                 parsedSheets['vdisk'] = parsedSheets['vDisk'] || [];
                 parsedSheets['vpartition'] = parsedSheets['vPartition'] || [];
@@ -642,7 +584,7 @@
                 parsedSheets['vcluster'] = parsedSheets['vCluster'] || [];
                 parsedSheets['vhost'] = parsedSheets['vHosts'] || [];
                 parsedSheets['vsnapshot'] = parsedSheets['vSnapshot'] || [];
-                parsedSheets['vcpu'] = parsedSheets['vCPU'] || []; // Capture separate vCPU load workspace tab array layers directly
+                parsedSheets['vcpu'] = parsedSheets['vCPU'] || []; 
 
                 const diagTabsList = document.getElementById('diagTabsList');
                 diagTabsList.innerHTML = '';
@@ -651,27 +593,6 @@
                     li.innerHTML = `Tab Label: <span class="text-indigo-400 font-bold">"${name}"</span> <span class="text-[9px] text-slate-500">(Length: ${name.length} chars)</span>`;
                     diagTabsList.appendChild(li);
                 });
-                
-                const diagColumnsMap = document.getElementById('diagColumnsMap');
-                diagColumnsMap.innerHTML = '';
-                
-                const renderHeadersDiag = (label, rowsArray) => {
-                    if(rowsArray && rowsArray.length > 0) {
-                        const headers = Object.keys(rowsArray[0]).slice(0, 8).join(', ');
-                        const div = document.createElement('div');
-                        div.innerHTML = `<span class="text-amber-400 font-bold">${label}:</span> <span class="text-slate-400">[ ${headers}... ]</span>`;
-                        diagColumnsMap.appendChild(div);
-                    } else {
-                        const div = document.createElement('div');
-                        div.innerHTML = `<span class="text-rose-400 font-bold">${label}:</span> <span class="text-rose-500/80 italic">Not found. Check tab names.</span>`;
-                        diagColumnsMap.appendChild(div);
-                    }
-                };
-
-                renderHeadersDiag('vmList Rows', parsedSheets['vmlist']);
-                renderHeadersDiag('vDisk Rows', parsedSheets['vdisk']);
-                renderHeadersDiag('vPartition Rows', parsedSheets['vpartition']);
-                renderHeadersDiag('vCPU Performance Rows', parsedSheets['vcpu']);
                 
                 document.getElementById('diagnosticConsole').classList.remove('hidden');
                 document.getElementById('diagnosticConsole').classList.add('flex');
@@ -692,13 +613,16 @@
                 const vdiskTabList = sheets['vdisk'] || [];
                 const vcpuPerformanceList = sheets['vcpu'] || [];
 
-                // REFACTORED IN v1.0.5: Iterates across separate vCPU sheet records to match your exact performance metrics formula targets
-                const cpuPerformanceLookupMap = {};
+                // REFACTORED IN v1.0.6: Map out all core utilization fields straight from your separate vCPU sheet metrics
+                const vcpuDataMap = {};
                 vcpuPerformanceList.forEach(v => {
                     const vmName = v['VM Name'] || v['VM'] || v['Name'];
                     if(vmName) {
-                        // Captures CPU MHz or overall load strings directly out of row arrays safely
-                        cpuPerformanceLookupMap[vmName] = parseFloat(v['CPU MHz'] || v['Overall CPU Usage'] || v['CPU usage'] || v['Peak %'] || v['CPU %'] || 0);
+                        vcpuDataMap[vmName] = {
+                            recommended95th: parseFloat(v['95th Percentile % (recommended)'] || v['95th Percentile'] || 0),
+                            peakPercent: parseFloat(v['Peak %'] || v['Peak'] || 0),
+                            avgPercent: parseFloat(v['Average %'] || v['Average'] || 0)
+                        };
                     }
                 });
 
@@ -732,6 +656,8 @@
                     const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || 0);
                     const finalDiskMiB = vdiskAggregationMap[name] !== undefined ? vdiskAggregationMap[name] : fallbackDiskMiB;
 
+                    const cpuProfile = vcpuDataMap[name] || { recommended95th: 0, peakPercent: 0, avgPercent: 0 };
+
                     return {
                         name: name || 'Unknown Asset',
                         state: vm['Power State'] || vm['Powerstate'] || vm['State'] || 'Unknown',
@@ -739,7 +665,12 @@
                         vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || 0),
                         ramGB: ramGB,
                         vdiskCapMiB: finalDiskMiB,
-                        cpuPerformanceValue: cpuPerformanceLookupMap[name] || 0, // Ingest cross-referenced CPU core utilization layers
+                        
+                        // vCPU metrics binding
+                        cpu95th: cpuProfile.recommended95th,
+                        cpuPeak: cpuProfile.peakPercent,
+                        cpuAvg: cpuProfile.avgPercent,
+
                         partitionConfigMiB: partConfigMap[name] || 0,
                         partitionConsumedMiB: partConsumedMap[name] || 0
                     };
@@ -779,9 +710,8 @@
                 await writableStream.write(JSON.stringify(payload, null, 2));
                 await writableStream.close();
                 await scanAndRenderFileChips();
-                alert(`Successfully saved collection record token: ${finalName}`);
             } catch (err) { 
-                alert("Failed auto-committing local file record matrix: " + err.message); 
+                console.error(err);
             }
         }
 
@@ -795,11 +725,10 @@
             const stoppedVMs = vms.filter(v => !String(v.state || '').toLowerCase().includes('on'));
             document.getElementById('kpiActiveVMs').innerText = runningVMs.length;
 
-            // REFACTORED IN v1.0.5: Dynamically filter heavy/contended risk nodes matching thresholds (>=16 vCPUs or >=80 usage metrics)
-            const hotCpuNodeList = vms.filter(v => v.vcpus >= 16 || v.cpuPerformanceValue >= 80);
+            // Trigger filters based on your multi-threshold requirements
+            const hotCpuNodeList = vms.filter(v => v.vcpus >= 16 || v.cpu95th >= 80 || v.cpuPeak >= 80);
             document.getElementById('kpiHotCpuCount').innerText = hotCpuNodeList.length;
 
-            // Paint inline drop-down registry risk list elements
             const hotTbody = document.getElementById('hotCpuTableBody');
             hotTbody.innerHTML = '';
             if(hotCpuNodeList.length === 0) {
@@ -809,12 +738,13 @@
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-rose-950/10 border-b border-rose-900/10";
                     const isRunning = String(v.state || '').toLowerCase().includes('on');
+                    const maxCpuVal = Math.max(v.cpu95th, v.cpuPeak);
                     
                     tr.innerHTML = `
                         <td class="p-3 font-bold text-slate-100">${v.name}</td>
                         <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] ${isRunning ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-500'}">${v.state}</span></td>
                         <td class="p-3 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus} Cores</td>
-                        <td class="p-3 text-right font-mono ${v.cpuPerformanceValue >= 80 ? 'text-rose-400 font-black' : ''}">${v.cpuPerformanceValue > 0 ? v.cpuPerformanceValue.toFixed(1) + '%' : '-'}</td>
+                        <td class="p-3 text-right font-mono text-rose-400 font-black">${maxCpuVal > 0 ? maxCpuVal.toFixed(1) + '%' : '-'}</td>
                         <td class="p-3 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)} GB</td>
                     `;
                     hotTbody.appendChild(tr);
@@ -874,7 +804,7 @@
                 const cpuSpeedRaw = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || h['CPU Speed MHz'] || 0);
                 const cpuSpeedStr = cpuSpeedRaw > 0 ? `${(cpuSpeedRaw / 1000).toFixed(2)} GHz` : '-';
                 const ramRaw = parseFloat(h['Memory Size'] || h['Memory Size (MiB)'] || h['RAM'] || 0);
-                const ramString = ramRaw > 1024 ? `${(ramRaw / 1024).toFixed(0)} GB` : ramRaw > 0 ? `${ramRaw} MB` : '-';
+                const ramString = ramRaw > 1024 ? `${(rawRam / 1024).toFixed(0)} GB` : ramRaw > 0 ? `${ramRaw} MB` : '-';
                 
                 tr.innerHTML = `
                     <td class="p-2.5 font-medium text-slate-200 max-w-[140px] truncate">${hostName}</td>
@@ -887,36 +817,75 @@
             });
         }
 
-        // REFACTORED IN v1.0.5: Injects accurate performance data points natively into main ledger elements
+        // REFACTORED IN v1.0.6: Dynamically builds headers and swaps row values based on active switch state toggles
         function renderWorkloadLedger(vms) {
-            const tbody = document.getElementById('vmTableBody'); const query = document.getElementById('vmSearch').value.toLowerCase(); tbody.innerHTML = '';
+            const headerTarget = document.getElementById('vmTableHeaderTarget');
+            const tbody = document.getElementById('vmTableBody'); 
+            const query = document.getElementById('vmSearch').value.toLowerCase(); 
+            
+            tbody.innerHTML = '';
+
+            // Render Header dynamically to prevent columns getting misaligned
+            if (activeLedgerContextView === 'vm') {
+                headerTarget.innerHTML = `
+                    <tr class="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
+                        <th class="px-6 py-3.5">VM Name</th>
+                        <th class="px-6 py-3.5">State</th>
+                        <th class="px-6 py-3.5 text-center">vCPUs</th>
+                        <th class="px-6 py-3.5 text-right">Memory (GB)</th>
+                        <th class="px-6 py-3.5 text-right">Total vDisk Capacity (GB)</th>
+                        <th class="px-6 py-3.5 text-right">vPartition Configured (GB)</th>
+                        <th class="px-6 py-3.5 text-right">vPartition Consumed (GB)</th>
+                        <th class="px-6 py-3.5 text-right">Guest OS</th>
+                    </tr>`;
+            } else {
+                headerTarget.innerHTML = `
+                    <tr class="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
+                        <th class="px-6 py-3.5">VM Name</th>
+                        <th class="px-6 py-3.5 text-center">vCPUs</th>
+                        <th class="px-6 py-3.5 text-right">95th Percentile % (recommended)</th>
+                        <th class="px-6 py-3.5 text-right">Peak %</th>
+                        <th class="px-6 py-3.5 text-right">Average %</th>
+                        <th class="px-6 py-3.5 text-right">Guest OS</th>
+                    </tr>`;
+            }
+
             vms.forEach(v => {
                 if(query && !v.name.toLowerCase().includes(query) && !v.os.toLowerCase().includes(query)) return;
-                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/50 transition border-b border-slate-900/40 font-medium text-slate-300";
-                const statusBadge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
                 
-                const vdiskCapGB = v.vdiskCapMiB / 1024;
-                const pConfigGB = v.partitionConfigMiB / 1024;
-                const pConsumedGB = v.partitionConsumedMiB / 1024;
+                const tr = document.createElement('tr'); 
+                tr.className = "hover:bg-slate-900/50 transition border-b border-slate-900/40 font-medium text-slate-300";
+                
+                if (activeLedgerContextView === 'vm') {
+                    const statusBadge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
+                    const vdiskCapGB = v.vdiskCapMiB / 1024;
+                    const pConfigGB = v.partitionConfigMiB / 1024;
+                    const pConsumedGB = v.partitionConsumedMiB / 1024;
 
-                const vpartConfigStr = pConfigGB > 0 ? `${pConfigGB.toFixed(1)}` : '-';
-                const vpartConsumedStr = pConsumedGB > 0 ? `${pConsumedGB.toFixed(1)}` : '-';
+                    tr.innerHTML = `
+                        <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
+                        <td class="px-6 py-3.5">${statusBadge}</td>
+                        <td class="px-6 py-3.5 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-purple-400">${vdiskCapGB.toFixed(1)}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${pConfigGB > 0 ? pConfigGB.toFixed(1) : '-'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${pConsumedGB > 0 ? pConsumedGB.toFixed(1) : '-'}</td>
+                        <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
+                    `;
+                } else {
+                    // Styles up high utilization rows in high contrast bold red
+                    const cls95 = v.cpu95th >= 80 ? 'text-rose-500 font-black animate-pulse' : 'text-slate-400';
+                    const clsPeak = v.cpuPeak >= 80 ? 'text-rose-500 font-black' : 'text-slate-400';
 
-                // Display dynamic usage levels with tailored styling colors
-                const cpuClass = v.cpuPerformanceValue >= 80 ? 'text-rose-400 font-bold animate-pulse' : 'text-slate-400';
-                const cpuLoadDisplayStr = v.cpuPerformanceValue > 0 ? v.cpuPerformanceValue.toFixed(1) + '%' : '-';
-
-                tr.innerHTML = `
-                    <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
-                    <td class="px-6 py-3.5">${statusBadge}</td>
-                    <td class="px-6 py-3.5 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus}</td>
-                    <td class="px-6 py-3.5 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)}</td>
-                    <td class="px-6 py-3.5 text-right font-mono ${cpuClass}">${cpuLoadDisplayStr}</td>
-                    <td class="px-6 py-3.5 text-right font-mono text-purple-400">${vdiskCapGB.toFixed(1)}</td>
-                    <td class="px-6 py-3.5 text-right font-mono text-slate-400">${vpartConfigStr}</td>
-                    <td class="px-6 py-3.5 text-right font-mono text-slate-400">${vpartConsumedStr}</td>
-                    <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
-                `;
+                    tr.innerHTML = `
+                        <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
+                        <td class="px-6 py-3.5 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus}</td>
+                        <td class="px-6 py-3.5 text-right font-mono ${cls95}">${v.cpu95th > 0 ? v.cpu95th.toFixed(1) + '%' : '0.0%'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono ${clsPeak}">${v.cpuPeak > 0 ? v.cpuPeak.toFixed(1) + '%' : '0.0%'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${v.cpuAvg > 0 ? v.cpuAvg.toFixed(1) + '%' : '0.0%'}</td>
+                        <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
+                    `;
+                }
                 tbody.appendChild(tr);
             });
         }
@@ -936,7 +905,9 @@
                 <th style="${headerStyleString}">Power State</th>
                 <th style="${headerStyleString}">vCPUs</th>
                 <th style="${headerStyleString}">Allocated RAM (GB)</th>
-                <th style="${headerStyleString}">95th % CPU Usage</th>
+                <th style="${headerStyleString}">95th Percentile %</th>
+                <th style="${headerStyleString}">Peak %</th>
+                <th style="${headerStyleString}">Average %</th>
                 <th style="${headerStyleString}">Total vDisk Capacity (GB)</th>
                 <th style="${headerStyleString}">vPartition Configured (GB)</th>
                 <th style="${headerStyleString}">vPartition Consumed (GB)</th>
@@ -949,7 +920,9 @@
                     <td style="${dataStyleString}; text-align: center;">${v.state}</td>
                     <td style="${dataStyleString}; text-align: center;">${v.vcpus}</td>
                     <td style="${dataStyleString}; text-align: right;">${v.ramGB.toFixed(1)}</td>
-                    <td style="${dataStyleString}; text-align: right;">${v.cpuPerformanceValue > 0 ? v.cpuPerformanceValue.toFixed(1) + '%' : '-'}</td>
+                    <td style="${dataStyleString}; text-align: right;">${v.cpu95th.toFixed(1)}%</td>
+                    <td style="${dataStyleString}; text-align: right;">${v.cpuPeak.toFixed(1)}%</td>
+                    <td style="${dataStyleString}; text-align: right;">${v.cpuAvg.toFixed(1)}%</td>
                     <td style="${dataStyleString}; text-align: right;">${(v.vdiskCapMiB / 1024).toFixed(1)}</td>
                     <td style="${dataStyleString}; text-align: right;">${v.partitionConfigMiB > 0 ? (v.partitionConfigMiB / 1024).toFixed(1) : '0.0'}</td>
                     <td style="${dataStyleString}; text-align: right;">${v.partitionConsumedMiB > 0 ? (v.partitionConsumedMiB / 1024).toFixed(1) : '0.0'}</td>
@@ -993,8 +966,7 @@
             const hostWorksheet = XLSX.utils.table_to_sheet(tempHostTable, { raw: true });
             XLSX.utils.book_append_sheet(styledWorkbook, hostWorksheet, "Physical Fleet Inventory");
 
-            const fileTitleStamp = "Infrastructure_Assessment";
-            XLSX.writeFile(styledWorkbook, `${fileTitleStamp}_Package_v1.0.5.xlsx`);
+            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.0.6.xlsx`);
         }
     </script>
 </body>
