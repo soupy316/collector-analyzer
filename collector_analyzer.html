@@ -15,8 +15,8 @@
     <header class="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <!-- Incremented Tracking Version Number Marker Tag to v1.0.6 -->
-                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.6</div>
+                <!-- Incremented Tracking Version Number Marker Tag to v1.0.7 -->
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.7</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
                     <p class="text-xs text-slate-400">Comprehensive Local Repository & 21-Tab Infrastructure Assessment Suite</p>
@@ -47,11 +47,11 @@
             </div>
 
             <div class="flex items-center gap-4 w-full lg:w-auto justify-end">
-                <button id="btnSelectWorkspace" class="hidden w-full lg:w-auto px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/15">
+                <button id="btnSelectWorkspace" class="hidden px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-indigo-600/15">
                     Set Local Repository Path
                 </button>
                 
-                <button id="btnRestoreWorkspace" class="hidden w-full lg:w-auto px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-emerald-600/15 animate-pulse">
+                <button id="btnRestoreWorkspace" class="hidden px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-lg shadow-emerald-600/15 animate-pulse">
                     ⚡ Reconnect Local Repository
                 </button>
 
@@ -256,7 +256,6 @@
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full xl:w-auto">
                         <h3 class="text-sm font-bold text-slate-200 shrink-0">Virtual Machine Ledger</h3>
                         
-                        <!-- ADDED: Dual Context Tab Flippers to swap view layouts instantly -->
                         <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800 shrink-0">
                             <button id="toggleViewVmDetails" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer">
                                 Per VM Details
@@ -279,7 +278,6 @@
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
-                        <!-- Dynamic Ledger Table Grid Context Header Target -->
                         <thead id="vmTableHeaderTarget"></thead>
                         <tbody id="vmTableBody" class="divide-y divide-slate-800/50 text-slate-300"></tbody>
                     </table>
@@ -294,8 +292,6 @@
         let currentLoadedFilesMap = {};
         let scannedCustomerFoldersList = [];
         window.environmentCache = {};
-        
-        // Active display tab tracking property (vm || cpu)
         let activeLedgerContextView = 'vm'; 
 
         // DOM Triggers
@@ -309,7 +305,6 @@
         document.getElementById('txtCustomerSearch').addEventListener('input', filterCustomerDropdown);
         document.getElementById('btnExportDataPackage').addEventListener('click', triggerExcelDataExportSequence);
         
-        // Tab flipping action event loops
         document.getElementById('toggleViewVmDetails').addEventListener('click', () => { swapActiveLedgerContext('vm'); });
         document.getElementById('toggleViewCpuDetails').addEventListener('click', () => { swapActiveLedgerContext('cpu'); });
 
@@ -328,10 +323,8 @@
 
         function swapActiveLedgerContext(viewMode) {
             activeLedgerContextView = viewMode;
-            
             const btnVm = document.getElementById('toggleViewVmDetails');
             const btnCpu = document.getElementById('toggleViewCpuDetails');
-            
             if(viewMode === 'vm') {
                 btnVm.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer";
                 btnCpu.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer";
@@ -339,7 +332,6 @@
                 btnCpu.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer";
                 btnVm.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer";
             }
-            
             if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
         }
 
@@ -362,12 +354,12 @@
                 });
 
                 if (savedHandle) {
-                    document.getElementById('workspacePath').innerText = `Discovered prior workspace token mapping: [ ${savedHandle.name} ]`;
+                    document.getElementById('workspacePath').innerText = `Discovered workspace folder: [ ${savedHandle.name} ]`;
                     document.getElementById('btnRestoreWorkspace').innerText = `⚡ Reconnect Local Repository [ ${savedHandle.name} ]`;
                     document.getElementById('btnRestoreWorkspace').classList.remove('hidden');
-                    document.getElementById('btnSelectWorkspace').classList.remove('hidden');
+                    document.getElementById('btnSelectWorkspace').classList.add('hidden');
                 } else {
-                    document.getElementById('workspacePath').innerText = "No root workspace repository connected yet.";
+                    document.getElementById('workspacePath').innerText = "No root workspace connected yet.";
                     document.getElementById('btnSelectWorkspace').classList.remove('hidden');
                 }
             } catch (err) {
@@ -382,7 +374,7 @@
                 const tx = db.transaction("handles", "readwrite");
                 tx.objectStore("handles").put(rootDirectoryHandle, "rootFolder");
                 await handleWorkspaceActivationSuccess();
-            } catch (err) { alert("Permission required to index repository files."); }
+            } catch (err) { alert("Permission required to index files."); }
         }
 
         async function restoreSavedWorkspaceHandle() {
@@ -400,7 +392,7 @@
                     rootDirectoryHandle = savedHandle;
                     await handleWorkspaceActivationSuccess();
                 } else {
-                    alert("Directory access verification declined by security layer.");
+                    alert("Directory verification declined.");
                 }
             } catch(err) {
                 document.getElementById('btnSelectWorkspace').classList.remove('hidden');
@@ -409,7 +401,7 @@
 
         async function handleWorkspaceActivationSuccess() {
             document.getElementById('workspaceIndicator').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40";
-            document.getElementById('workspacePath').innerText = `Active Repository Path Connected: [ ${rootDirectoryHandle.name} ]`;
+            document.getElementById('workspacePath').innerText = `Active Repository Connected: [ ${rootDirectoryHandle.name} ]`;
             document.getElementById('btnSelectWorkspace').classList.add('hidden');
             document.getElementById('btnRestoreWorkspace').classList.add('hidden');
             document.getElementById('projectControls').classList.remove('hidden');
@@ -434,7 +426,7 @@
             });
 
             document.getElementById('welcomeHeader').innerText = "Repository Index Synced";
-            document.getElementById('welcomeText').innerText = `Choose a customer record from the dropdown or click "+ New Customer".`;
+            document.getElementById('welcomeText').innerText = `Choose a customer folder or click "+ New Customer".`;
         }
 
         function filterCustomerDropdown() {
@@ -467,16 +459,14 @@
             try {
                 activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(selectedVal, { create: false });
                 document.getElementById('uploadZone').classList.remove('hidden');
-                
                 const formattedName = selectedVal.replace(/_/g, ' ');
                 document.getElementById('lblCustomerClusters').innerText = `${formattedName} Clusters:`;
-                
                 await scanAndRenderFileChips();
-            } catch(err) { alert("Error opening the customer workspace environment."); }
+            } catch(err) { alert("Error opening workspace directory."); }
         }
 
         async function triggerInlineFileRenameSequence(oldDisplayKey) {
-            const userNewName = prompt(`Enter a new custom name for cluster resource metadata snapshot [ ${oldDisplayKey} ]:`, oldDisplayKey);
+            const userNewName = prompt(`Rename metadata snapshot [ ${oldDisplayKey} ]:`, oldDisplayKey);
             if (!userNewName || !userNewName.trim() || userNewName.trim() === oldDisplayKey) return;
 
             const cleanNewDisplayKey = userNewName.replace(/[^a-z0-9_ ]/gi, '').trim();
@@ -494,17 +484,16 @@
                 await writableStream.close();
 
                 await activeProjectDirectoryHandle.removeEntry(`${cleanOldStorageKey}.json`);
-                
                 document.getElementById('dashboardState').classList.add('hidden');
                 document.getElementById('welcomeState').classList.remove('hidden');
                 await scanAndRenderFileChips();
             } catch (err) {
-                alert("Failed moving internal storage handles: " + err.message);
+                alert("Failed renaming internal storage index layout: " + err.message);
             }
         }
 
         async function removeSpecificSiteFile(fileKey) {
-            const confirmFileDel = confirm(`Delete specific data snapshot "${fileKey}"?`);
+            const confirmFileDel = confirm(`Delete snapshot "${fileKey}"?`);
             if(!confirmFileDel) return;
 
             try {
@@ -534,8 +523,7 @@
                 renderPhysicalFleetRegister(stateObj.raw.hosts);
                 renderWorkloadLedger(window.environmentCache.vmRollup);
             } catch(err) { 
-                console.error(err);
-                alert("Error during cached file restoration procedures. File format mismatch."); 
+                alert("Error loading cached file footprint entry."); 
             }
         }
 
@@ -543,9 +531,9 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            const promptName = prompt(`Please input a clear descriptor label for this infrastructure workbook (e.g., Production, DR Site, DMZ Stack):`);
+            const promptName = prompt(`Please input a clear descriptor label for this workbook (e.g., Production, DR Site):`);
             if (!promptName || !promptName.trim()) {
-                alert("Upload aborted: A descriptive title assignment is strictly mandatory to prevent sketchy file collisions.");
+                alert("Upload aborted: Name is mandatory.");
                 e.target.value = ''; 
                 return;
             }
@@ -560,9 +548,6 @@
             const finalDisplayTitle = `${baseCleanTitle} ${dateStringToken}`;
             const cleanStorageFileKey = finalDisplayTitle.replace(/ /g, '_');
 
-            if (currentLoadedFilesMap[finalDisplayTitle]) {
-                alert("A structural record token already occupies this cluster index space. Overwriting.");
-            }
             processFilePayload(file, cleanStorageFileKey);
         }
 
@@ -590,7 +575,7 @@
                 diagTabsList.innerHTML = '';
                 workbook.SheetNames.forEach(name => {
                     const li = document.createElement('li');
-                    li.innerHTML = `Tab Label: <span class="text-indigo-400 font-bold">"${name}"</span> <span class="text-[9px] text-slate-500">(Length: ${name.length} chars)</span>`;
+                    li.innerHTML = `Tab Label: <span class="text-indigo-400 font-bold">"${name}"</span>`;
                     diagTabsList.appendChild(li);
                 });
                 
@@ -613,7 +598,6 @@
                 const vdiskTabList = sheets['vdisk'] || [];
                 const vcpuPerformanceList = sheets['vcpu'] || [];
 
-                // REFACTORED IN v1.0.6: Map out all core utilization fields straight from your separate vCPU sheet metrics
                 const vcpuDataMap = {};
                 vcpuPerformanceList.forEach(v => {
                     const vmName = v['VM Name'] || v['VM'] || v['Name'];
@@ -641,7 +625,6 @@
                     if (vmName) {
                         const capMiB = parseFloat(p['Capacity MiB'] || p['Capacity (MiB)'] || p['Capacity'] || 0);
                         const consumedMiB = parseFloat(p['Consumed MiB'] || p['Consumed (MiB)'] || p['Consumed'] || 0);
-
                         partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
                         partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
                     }
@@ -649,13 +632,10 @@
 
                 const optimizedVmList = vmListTab.map(vm => {
                     const name = vm['VM Name'] || vm['VM'] || vm['Name'];
-                    
                     const ramMiB = parseFloat(vm['Memory (MiB)'] || vm['Size (MiB)'] || vm['Memory'] || 0);
                     const ramGB = ramMiB / 1024;
-
                     const fallbackDiskMiB = parseFloat(vm['Capacity (MiB)'] || 0);
                     const finalDiskMiB = vdiskAggregationMap[name] !== undefined ? vdiskAggregationMap[name] : fallbackDiskMiB;
-
                     const cpuProfile = vcpuDataMap[name] || { recommended95th: 0, peakPercent: 0, avgPercent: 0 };
 
                     return {
@@ -665,12 +645,9 @@
                         vcpus: parseInt(vm['vCPUs'] || vm['CPUs'] || 0),
                         ramGB: ramGB,
                         vdiskCapMiB: finalDiskMiB,
-                        
-                        // vCPU metrics binding
                         cpu95th: cpuProfile.recommended95th,
                         cpuPeak: cpuProfile.peakPercent,
                         cpuAvg: cpuProfile.avgPercent,
-
                         partitionConfigMiB: partConfigMap[name] || 0,
                         partitionConsumedMiB: partConsumedMap[name] || 0
                     };
@@ -686,32 +663,56 @@
                 renderSnapshotRiskRegister(snapList);
                 renderPhysicalFleetRegister(hostList);
                 renderWorkloadLedger(optimizedVmList);
-
-                const siteStatePayload = {
-                    kpis: { dc: dcList.length, clusters: clusterList.length, hosts: hostList.length, gpus: 0 },
-                    cache: { vmRollup: optimizedVmList },
-                    raw: { clusters: clusterList, snaps: snapList, hosts: hostList }
-                };
-
-                writeSiteFileToDisk(saveFileName, siteStatePayload);
-
             } catch (err) {
-                console.error(err);
-                alert("CRITICAL ERROR: Failed parsing spreadsheet mapping! Details: " + err.message);
+                alert("Failed parsing site arrays: " + err.message);
             }
         }
 
-        async function writeSiteFileToDisk(saveFileName, payload) {
-            if(!activeProjectDirectoryHandle) return;
-            try {
-                const finalName = `${saveFileName}.json`;
-                const fileHandle = await activeProjectDirectoryHandle.getFileHandle(finalName, { create: true });
-                const writableStream = await fileHandle.createWritable();
-                await writableStream.write(JSON.stringify(payload, null, 2));
-                await writableStream.close();
-                await scanAndRenderFileChips();
-            } catch (err) { 
-                console.error(err);
+        async function scanAndRenderFileChips() {
+            currentLoadedFilesMap = {};
+            const chipContainer = document.getElementById('locationChipContainer');
+            chipContainer.innerHTML = '';
+            
+            for await (const entry of activeProjectDirectoryHandle.values()) {
+                if (entry.kind === 'file' && entry.name.endsWith('.json')) {
+                    const displayName = entry.name.replace('.json', '').replace(/_/g, ' ');
+                    currentLoadedFilesMap[displayName] = entry;
+                }
+            }
+
+            const keys = Object.keys(currentLoadedFilesMap).sort();
+            if(keys.length > 0) {
+                document.getElementById('locationSelectorZone').classList.remove('hidden');
+                document.getElementById('locationSelectorZone').classList.add('flex');
+                keys.forEach(fileKey => {
+                    const chipGroup = document.createElement('div');
+                    chipGroup.className = "inline-flex items-center bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-sm";
+
+                    const selectBtn = document.createElement('button');
+                    selectBtn.className = "px-3 py-1 text-slate-200 text-xs font-medium hover:bg-slate-750 transition-colors cursor-pointer";
+                    selectBtn.innerText = fileKey;
+                    selectBtn.onclick = () => loadCachedSiteFile(fileKey);
+
+                    const renameBtn = document.createElement('button');
+                    renameBtn.className = "px-2 py-1 bg-slate-900/20 text-slate-400 hover:text-amber-400 border-l border-slate-700/40 transition-colors text-[10px] cursor-pointer";
+                    renameBtn.innerHTML = "✏️";
+                    renameBtn.onclick = (e) => { e.stopPropagation(); triggerInlineFileRenameSequence(fileKey); };
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = "px-2 py-1 bg-slate-900/40 text-slate-500 hover:text-rose-400 hover:bg-rose-950/20 border-l border-slate-700/60 transition-all text-xs font-black cursor-pointer";
+                    deleteBtn.innerHTML = "&times;";
+                    deleteBtn.onclick = (e) => { e.stopPropagation(); removeSpecificSiteFile(fileKey); };
+
+                    chipGroup.appendChild(selectBtn);
+                    chipGroup.appendChild(renameBtn);
+                    chipGroup.appendChild(deleteBtn);
+                    chipContainer.appendChild(chipGroup);
+                });
+                document.getElementById('welcomeState').classList.add('hidden');
+            } else {
+                document.getElementById('locationSelectorZone').classList.add('hidden');
+                document.getElementById('welcomeState').classList.remove('hidden');
+                document.getElementById('dashboardState').classList.add('hidden');
             }
         }
 
@@ -722,17 +723,15 @@
             document.getElementById('kpiVMs').innerText = vms.length;
             
             const runningVMs = vms.filter(v => String(v.state || '').toLowerCase().includes('on'));
-            const stoppedVMs = vms.filter(v => !String(v.state || '').toLowerCase().includes('on'));
             document.getElementById('kpiActiveVMs').innerText = runningVMs.length;
 
-            // Trigger filters based on your multi-threshold requirements
             const hotCpuNodeList = vms.filter(v => v.vcpus >= 16 || v.cpu95th >= 80 || v.cpuPeak >= 80);
             document.getElementById('kpiHotCpuCount').innerText = hotCpuNodeList.length;
 
             const hotTbody = document.getElementById('hotCpuTableBody');
             hotTbody.innerHTML = '';
             if(hotCpuNodeList.length === 0) {
-                hotTbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-500 italic">No compute contention layers currently meet risks parameters.</td></tr>`;
+                hotTbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-500 italic">No compute contention layers found.</td></tr>`;
             } else {
                 hotCpuNodeList.forEach(v => {
                     const tr = document.createElement('tr');
@@ -754,78 +753,62 @@
             const summaries = {
                 all: { count: vms.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 },
                 on:  { count: runningVMs.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 },
-                off: { count: stoppedVMs.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 }
+                off: { count: vms.length - runningVMs.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 }
             };
 
             vms.forEach(v => {
                 const isRunning = String(v.state || '').toLowerCase().includes('on');
                 const targetCard = isRunning ? summaries.on : summaries.off;
-                
                 summaries.all.vcpu += v.vcpus || 0; summaries.all.mem += v.ramGB || 0; summaries.all.diskMiB += v.vdiskCapMiB || 0; summaries.all.partCfgMiB += v.partitionConfigMiB || 0; summaries.all.partUsedMiB += v.partitionConsumedMiB || 0;
                 targetCard.vcpu += v.vcpus || 0; targetCard.mem += v.ramGB || 0; targetCard.diskMiB += v.vdiskCapMiB || 0; targetCard.partCfgMiB += v.partitionConfigMiB || 0; targetCard.partUsedMiB += v.partitionConsumedMiB || 0;
             });
 
             const injectCardData = (prefix, data) => {
-                const diskTB = data.diskMiB / 1024 / 1024;
-                const partCfgTB = data.partCfgMiB / 1024 / 1024;
-                const partUsedTB = data.partUsedMiB / 1024 / 1024;
-
                 document.getElementById(`sum${prefix}Count`).innerText = data.count.toLocaleString();
                 document.getElementById(`sum${prefix}Vcpu`).innerText = data.vcpu.toLocaleString();
                 document.getElementById(`sum${prefix}Mem`).innerText  = data.mem.toLocaleString(undefined, {maximumFractionDigits:1}) + " GB";
-                document.getElementById(`sum${prefix}Disk`).innerText = diskTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB";
-                document.getElementById(`sum${prefix}PartCfg`).innerText  = partCfgTB > 0 ? partCfgTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '0.00 TB';
-                document.getElementById(`sum${prefix}PartUsed`).innerText = partUsedTB > 0 ? partUsedTB.toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '0.00 TB';
+                document.getElementById(`sum${prefix}Disk`).innerText = (data.diskMiB / 1024 / 1024).toLocaleString(undefined, {maximumFractionDigits:2}) + " TB";
+                document.getElementById(`sum${prefix}PartCfg`).innerText  = data.partCfgMiB > 0 ? (data.partCfgMiB / 1024 / 1024).toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '0.00 TB';
+                document.getElementById(`sum${prefix}PartUsed`).innerText = data.partUsedMiB > 0 ? (data.partUsedMiB / 1024 / 1024).toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '0.00 TB';
             };
-
             injectCardData('All', summaries.all); injectCardData('On', summaries.on); injectCardData('Off', summaries.off);
         }
 
         function renderSnapshotRiskRegister(snaps) {
             const tbody = document.getElementById('snapshotTableBody'); tbody.innerHTML = '';
-            if(!Array.isArray(snaps) || snaps.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 italic">No historical snapshots flagged.</td></tr>`; return; }
+            if(!Array.isArray(snaps) || snaps.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 italic">No historical snapshots.</td></tr>`; return; }
             snaps.slice(0, 20).forEach(s => {
                 const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors';
                 const sizeMiB = parseFloat(s['Size MiB (total)'] || s['Size MiB (vmsn)'] || 0);
-                tr.innerHTML = `<td class="p-2.5 font-medium text-slate-200">${s['VM Name'] || 'Unknown VM'}</td><td class="p-2.5 text-slate-400 max-w-[200px] truncate">${s['Snapshot Name'] || 'Unnamed'}</td><td class="p-2.5 text-right font-mono text-rose-400">${sizeMiB.toLocaleString(undefined, {maximumFractionDigits:1})} MiB</td>`;
+                tr.innerHTML = `<td class="p-2.5 font-medium text-slate-200">${s['VM Name'] || 'Unknown VM'}</td><td class="p-2.5 text-slate-400 truncate max-w-[140px]">${s['Snapshot Name'] || 'Unnamed'}</td><td class="p-2.5 text-right font-mono text-rose-400">${sizeMiB.toLocaleString()} MiB</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         function renderPhysicalFleetRegister(hosts) {
             const tbody = document.getElementById('hostTableBody'); tbody.innerHTML = '';
-            if(!Array.isArray(hosts) || hosts.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 italic">No physical compute nodes found.</td></tr>`; return; }
-            
+            if(!Array.isArray(hosts) || hosts.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 italic">No physical hosts found.</td></tr>`; return; }
             hosts.slice(0, 20).forEach(h => {
                 const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors text-[11px]';
-                const hostName = h['Host Name'] || h['Host IP'] || h['Host'] || 'Unknown Host';
-                const hwModel = h['Model'] || h['Hardware Model'] || '-';
-                const cpuModel = h['CPU Model'] || h['Processor Type'] || h['Processor Model'] || '-';
-                const cpuSpeedRaw = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || h['CPU Speed MHz'] || 0);
-                const cpuSpeedStr = cpuSpeedRaw > 0 ? `${(cpuSpeedRaw / 1000).toFixed(2)} GHz` : '-';
+                const cpuSpeedRaw = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || 0);
                 const ramRaw = parseFloat(h['Memory Size'] || h['Memory Size (MiB)'] || h['RAM'] || 0);
-                const ramString = ramRaw > 1024 ? `${(rawRam / 1024).toFixed(0)} GB` : ramRaw > 0 ? `${ramRaw} MB` : '-';
-                
                 tr.innerHTML = `
-                    <td class="p-2.5 font-medium text-slate-200 max-w-[140px] truncate">${hostName}</td>
-                    <td class="p-2.5 text-slate-400 truncate max-w-[120px]">${hwModel}</td>
-                    <td class="p-2.5 text-slate-400 truncate max-w-[160px]">${cpuModel}</td>
-                    <td class="p-2.5 text-center font-mono text-amber-400/90">${cpuSpeedStr}</td>
-                    <td class="p-2.5 text-right font-mono text-cyan-400">${ramString}</td>
+                    <td class="p-2.5 font-medium text-slate-200 truncate max-w-[140px]">${h['Host Name'] || 'Unknown'}</td>
+                    <td class="p-2.5 text-slate-400 truncate max-w-[120px]">${h['Model'] || '-'}</td>
+                    <td class="p-2.5 text-slate-400 truncate max-w-[140px]">${h['CPU Model'] || '-'}</td>
+                    <td class="p-2.5 text-center font-mono text-amber-400">${cpuSpeedRaw > 0 ? (cpuSpeedRaw/1000).toFixed(2)+' GHz' : '-'}</td>
+                    <td class="p-2.5 text-right font-mono text-cyan-400">${ramRaw > 1024 ? (ramRaw/1024).toFixed(0)+' GB' : '-'}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // REFACTORED IN v1.0.6: Dynamically builds headers and swaps row values based on active switch state toggles
         function renderWorkloadLedger(vms) {
             const headerTarget = document.getElementById('vmTableHeaderTarget');
             const tbody = document.getElementById('vmTableBody'); 
             const query = document.getElementById('vmSearch').value.toLowerCase(); 
-            
             tbody.innerHTML = '';
 
-            // Render Header dynamically to prevent columns getting misaligned
             if (activeLedgerContextView === 'vm') {
                 headerTarget.innerHTML = `
                     <tr class="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
@@ -852,31 +835,24 @@
 
             vms.forEach(v => {
                 if(query && !v.name.toLowerCase().includes(query) && !v.os.toLowerCase().includes(query)) return;
-                
                 const tr = document.createElement('tr'); 
                 tr.className = "hover:bg-slate-900/50 transition border-b border-slate-900/40 font-medium text-slate-300";
                 
                 if (activeLedgerContextView === 'vm') {
                     const statusBadge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
-                    const vdiskCapGB = v.vdiskCapMiB / 1024;
-                    const pConfigGB = v.partitionConfigMiB / 1024;
-                    const pConsumedGB = v.partitionConsumedMiB / 1024;
-
                     tr.innerHTML = `
                         <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
                         <td class="px-6 py-3.5">${statusBadge}</td>
                         <td class="px-6 py-3.5 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus}</td>
                         <td class="px-6 py-3.5 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)}</td>
-                        <td class="px-6 py-3.5 text-right font-mono text-purple-400">${vdiskCapGB.toFixed(1)}</td>
-                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${pConfigGB > 0 ? pConfigGB.toFixed(1) : '-'}</td>
-                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${pConsumedGB > 0 ? pConsumedGB.toFixed(1) : '-'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-purple-400">${(v.vdiskCapMiB / 1024).toFixed(1)}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${v.partitionConfigMiB > 0 ? (v.partitionConfigMiB/1024).toFixed(1) : '-'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${v.partitionConsumedMiB > 0 ? (v.partitionConsumedMiB/1024).toFixed(1) : '-'}</td>
                         <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
                     `;
                 } else {
-                    // Styles up high utilization rows in high contrast bold red
                     const cls95 = v.cpu95th >= 80 ? 'text-rose-500 font-black animate-pulse' : 'text-slate-400';
                     const clsPeak = v.cpuPeak >= 80 ? 'text-rose-500 font-black' : 'text-slate-400';
-
                     tr.innerHTML = `
                         <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
                         <td class="px-6 py-3.5 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus}</td>
@@ -893,80 +869,30 @@
         function triggerExcelDataExportSequence() {
             const vms = window.environmentCache.vmRollup || [];
             const hosts = window.environmentCache.rawHostsMetadata || [];
-
-            if(vms.length === 0) { alert("Please open a valid customer cluster dataset before generating exports."); return; }
+            if(vms.length === 0) return;
 
             const headerStyleString = "background-color: #7855fa; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #000000;";
             const dataStyleString = "border: 1px solid #000000;";
 
             const tempVmTable = document.createElement('table');
-            let vmHtml = `<thead><tr>
-                <th style="${headerStyleString}">VM Name</th>
-                <th style="${headerStyleString}">Power State</th>
-                <th style="${headerStyleString}">vCPUs</th>
-                <th style="${headerStyleString}">Allocated RAM (GB)</th>
-                <th style="${headerStyleString}">95th Percentile %</th>
-                <th style="${headerStyleString}">Peak %</th>
-                <th style="${headerStyleString}">Average %</th>
-                <th style="${headerStyleString}">Total vDisk Capacity (GB)</th>
-                <th style="${headerStyleString}">vPartition Configured (GB)</th>
-                <th style="${headerStyleString}">vPartition Consumed (GB)</th>
-                <th style="${headerStyleString}">Guest Operating System</th>
-            </tr></thead><tbody>`;
-
+            let vmHtml = `<thead><tr><th style="${headerStyleString}">VM Name</th><th style="${headerStyleString}">Power State</th><th style="${headerStyleString}">vCPUs</th><th style="${headerStyleString}">Allocated RAM (GB)</th><th style="${headerStyleString}">95th Percentile %</th><th style="${headerStyleString}">Peak %</th><th style="${headerStyleString}">Average %</th><th style="${headerStyleString}">Total vDisk Capacity (GB)</th><th style="${headerStyleString}">vPartition Configured (GB)</th><th style="${headerStyleString}">vPartition Consumed (GB)</th><th style="${headerStyleString}">Guest Operating System</th></tr></thead><tbody>`;
             vms.forEach(v => {
-                vmHtml += `<tr>
-                    <td style="${dataStyleString}">${v.name}</td>
-                    <td style="${dataStyleString}; text-align: center;">${v.state}</td>
-                    <td style="${dataStyleString}; text-align: center;">${v.vcpus}</td>
-                    <td style="${dataStyleString}; text-align: right;">${v.ramGB.toFixed(1)}</td>
-                    <td style="${dataStyleString}; text-align: right;">${v.cpu95th.toFixed(1)}%</td>
-                    <td style="${dataStyleString}; text-align: right;">${v.cpuPeak.toFixed(1)}%</td>
-                    <td style="${dataStyleString}; text-align: right;">${v.cpuAvg.toFixed(1)}%</td>
-                    <td style="${dataStyleString}; text-align: right;">${(v.vdiskCapMiB / 1024).toFixed(1)}</td>
-                    <td style="${dataStyleString}; text-align: right;">${v.partitionConfigMiB > 0 ? (v.partitionConfigMiB / 1024).toFixed(1) : '0.0'}</td>
-                    <td style="${dataStyleString}; text-align: right;">${v.partitionConsumedMiB > 0 ? (v.partitionConsumedMiB / 1024).toFixed(1) : '0.0'}</td>
-                    <td style="${dataStyleString}">${v.os || '-'}</td>
-                </tr>`;
+                vmHtml += `<tr><td style="${dataStyleString}">${v.name}</td><td style="${dataStyleString}; text-align: center;">${v.state}</td><td style="${dataStyleString}; text-align: center;">${v.vcpus}</td><td style="${dataStyleString}; text-align: right;">${v.ramGB.toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${v.cpu95th.toFixed(1)}%</td><td style="${dataStyleString}; text-align: right;">${v.cpuPeak.toFixed(1)}%</td><td style="${dataStyleString}; text-align: right;">${v.cpuAvg.toFixed(1)}%</td><td style="${dataStyleString}; text-align: right;">${(v.vdiskCapMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${(v.partitionConfigMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${(v.partitionConsumedMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}">${v.os || '-'}</td></tr>`;
             });
-            vmHtml += "</tbody>";
-            tempVmTable.innerHTML = vmHtml;
+            vmHtml += "</tbody>"; tempVmTable.innerHTML = vmHtml;
 
             const tempHostTable = document.createElement('table');
-            let hostHtml = `<thead><tr>
-                <th style="${headerStyleString}">Hostname / IP Node</th>
-                <th style="${headerStyleString}">Hardware Manufacturer Model</th>
-                <th style="${headerStyleString}">Processor Model Specifications</th>
-                <th style="${headerStyleString}">Core Clock Metric (GHz)</th>
-                <th style="${headerStyleString}">Physical Capacity RAM (GB)</th>
-            </tr></thead><tbody>`;
-
+            let hostHtml = `<thead><tr><th style="${headerStyleString}">Hostname / IP Node</th><th style="${headerStyleString}">Hardware Manufacturer Model</th><th style="${headerStyleString}">Processor Model Specifications</th><th style="${headerStyleString}">Core Clock Metric (GHz)</th><th style="${headerStyleString}">Physical Capacity RAM (GB)</th></tr></thead><tbody>`;
             hosts.forEach(h => {
-                const rawSpeed = parseFloat(h['CPU Speed (GHz)'] || h['CPU Speed'] || h['Speed'] || h['CPU Speed MHz'] || 0);
-                const speedGHz = rawSpeed > 100 ? rawSpeed / 1000 : rawSpeed;
-                const rawRam = parseFloat(h['Memory Size'] || h['Memory Size (MiB)'] || h['RAM'] || 0);
-                const ramGB = rawRam > 1024 ? rawRam / 1024 : rawRam;
-
-                hostHtml += `<tr>
-                    <td style="${dataStyleString}">${h['Host Name'] || h['Host IP'] || h['Host'] || 'Unknown Host'}</td>
-                    <td style="${dataStyleString}">${h['Model'] || h['Hardware Model'] || '-'}</td>
-                    <td style="${dataStyleString}">${h['CPU Model'] || h['Processor Type'] || '-'}</td>
-                    <td style="${dataStyleString}; text-align: center;">${speedGHz > 0 ? speedGHz.toFixed(2) : '-'}</td>
-                    <td style="${dataStyleString}; text-align: right;">${ramGB > 0 ? Math.round(ramGB) : '-'}</td>
-                </tr>`;
+                const rawSpeed = parseFloat(h['CPU Speed (GHz)'] || 0); const rawRam = parseFloat(h['Memory Size'] || 0);
+                hostHtml += `<tr><td style="${dataStyleString}">${h['Host Name'] || 'Unknown'}</td><td style="${dataStyleString}">${h['Model'] || '-'}</td><td style="${dataStyleString}">${h['CPU Model'] || '-'}</td><td style="${dataStyleString}; text-align: center;">${(rawSpeed/1000).toFixed(2)}</td><td style="${dataStyleString}; text-align: right;">${Math.round(rawRam/1024)}</td></tr>`;
             });
-            hostHtml += "</tbody>";
-            tempHostTable.innerHTML = hostHtml;
+            hostHtml += "</tbody>"; tempHostTable.innerHTML = hostHtml;
 
             const styledWorkbook = XLSX.utils.book_new();
-
-            const vmWorksheet = XLSX.utils.table_to_sheet(tempVmTable, { raw: true });
-            XLSX.utils.book_append_sheet(styledWorkbook, vmWorksheet, "Virtual Machine Details");
-
-            const hostWorksheet = XLSX.utils.table_to_sheet(tempHostTable, { raw: true });
-            XLSX.utils.book_append_sheet(styledWorkbook, hostWorksheet, "Physical Fleet Inventory");
-
-            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.0.6.xlsx`);
+            XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempVmTable, { raw: true }), "Virtual Machine Details");
+            XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempHostTable, { raw: true }), "Physical Fleet Inventory");
+            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.0.7.xlsx`);
         }
     </script>
 </body>
