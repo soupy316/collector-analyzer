@@ -15,8 +15,8 @@
     <header class="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <!-- Incremented Tracking Version Number Marker Tag to v1.0.8 -->
-                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.8</div>
+                <!-- Incremented Tracking Version Number Marker Tag to v1.0.9 -->
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.9</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
                     <p class="text-xs text-slate-400">Comprehensive Local Repository & 21-Tab Infrastructure Assessment Suite</p>
@@ -252,7 +252,6 @@
                     <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full xl:w-auto">
                         <h3 class="text-sm font-bold text-slate-200 shrink-0">Virtual Machine Ledger</h3>
                         
-                        <!-- Dual Context Tab Flippers to swap view layouts instantly -->
                         <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800 shrink-0">
                             <button id="toggleViewVmDetails" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer">
                                 Per VM Details
@@ -275,7 +274,6 @@
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse">
-                        <!-- Dynamic Ledger Table Grid Context Header Target -->
                         <thead id="vmTableHeaderTarget"></thead>
                         <tbody id="vmTableBody" class="divide-y divide-slate-800/50 text-slate-300"></tbody>
                     </table>
@@ -579,7 +577,6 @@
                     parsedSheets[name.trim()] = XLSX.utils.sheet_to_json(workbook.Sheets[name]);
                 });
                 
-                // Direct parsing assignment bindings
                 parsedSheets['vmlist'] = parsedSheets['vmList'] || [];
                 parsedSheets['vdisk'] = parsedSheets['vDisk'] || [];
                 parsedSheets['vpartition'] = parsedSheets['vPartition'] || [];
@@ -597,26 +594,6 @@
                     diagTabsList.appendChild(li);
                 });
                 
-                const diagColumnsMap = document.getElementById('diagColumnsMap');
-                diagColumnsMap.innerHTML = '';
-                
-                const renderHeadersDiag = (label, rowsArray) => {
-                    if(rowsArray && rowsArray.length > 0) {
-                        const headers = Object.keys(rowsArray[0]).slice(0, 8).join(', ');
-                        const div = document.createElement('div');
-                        div.innerHTML = `<span class="text-amber-400 font-bold">${label}:</span> <span class="text-slate-400">[ ${headers}... ]</span>`;
-                        diagColumnsMap.appendChild(div);
-                    }
-                };
-
-                renderHeadersDiag('vmList Rows', parsedSheets['vmlist']);
-                renderHeadersDiag('vDisk Rows', parsedSheets['vdisk']);
-                renderHeadersDiag('vPartition Rows', parsedSheets['vpartition']);
-                renderHeadersDiag('vCPU Rows', parsedSheets['vcpu']);
-                
-                document.getElementById('diagnosticConsole').classList.remove('hidden');
-                document.getElementById('diagnosticConsole').classList.add('flex');
-
                 processAndSaveVcenterSite(parsedSheets, storageKey);
             };
             reader.readAsArrayBuffer(file);
@@ -633,15 +610,26 @@
                 const vdiskTabList = sheets['vdisk'] || [];
                 const vcpuPerformanceList = sheets['vcpu'] || [];
 
-                // Re-engineered exact string token extraction maps
+                // FUZZY PER-ROW INTERCEPTOR ENG: Normalize row mapping keys recursively to match metrics
+                const extractValueByPartialText = (rowObject, textSnippet) => {
+                    const normalizedTarget = textSnippet.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    for (const rowKey in rowObject) {
+                        const normalizedKey = rowKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        if (normalizedKey.includes(normalizedTarget)) {
+                            return parseFloat(rowObject[rowKey]) || 0;
+                        }
+                    }
+                    return 0;
+                };
+
                 const vcpuDataMap = {};
                 vcpuPerformanceList.forEach(v => {
                     const vmName = v['VM Name'] || v['VM'] || v['Name'];
                     if(vmName) {
                         vcpuDataMap[vmName] = {
-                            recommended95th: parseFloat(v['95th Percentile % (recommended)'] || v['95th Percentile %'] || v['95th Percentile'] || 0),
-                            peakPercent: parseFloat(v['Peak %'] || v['Peak'] || v['Max %'] || 0),
-                            avgPercent: parseFloat(v['Average %'] || v['Average'] || v['Avg %'] || 0)
+                            recommended95th: extractValueByPartialText(v, '95th'),
+                            peakPercent: extractValueByPartialText(v, 'peak'),
+                            avgPercent: extractValueByPartialText(v, 'average') || extractValueByPartialText(v, 'avg')
                         };
                     }
                 });
@@ -650,7 +638,7 @@
                 vdiskTabList.forEach(d => {
                     const vmName = d['VM'] || d['VM Name'] || d['Name'];
                     if (vmName) {
-                        const diskMiB = parseFloat(d['Capacity MiB'] || d['Capacity (MiB)'] || d['Capacity'] || 0);
+                        const diskMiB = parseFloat(d['Capacity (MiB)'] || d['Capacity MiB'] || d['Capacity'] || 0);
                         vdiskAggregationMap[vmName] = (vdiskAggregationMap[vmName] || 0) + diskMiB;
                     }
                 });
@@ -659,8 +647,8 @@
                 partitionList.forEach(p => {
                     const vmName = p['VM'] || p['VM Name'] || p['Name'];
                     if (vmName) {
-                        const capMiB = parseFloat(p['Capacity MiB'] || p['Capacity (MiB)'] || p['Capacity'] || 0);
-                        const consumedMiB = parseFloat(p['Consumed MiB'] || p['Consumed (MiB)'] || p['Consumed'] || 0);
+                        const capMiB = parseFloat(p['Capacity (MiB)'] || p['Capacity MiB'] || p['Capacity'] || 0);
+                        const consumedMiB = parseFloat(p['Consumed (MiB)'] || p['Consumed MiB'] || p['Consumed'] || 0);
                         partConfigMap[vmName] = (partConfigMap[vmName] || 0) + capMiB;
                         partConsumedMap[vmName] = (partConsumedMap[vmName] || 0) + consumedMiB;
                     }
@@ -682,7 +670,6 @@
                         ramGB: ramGB,
                         vdiskCapMiB: finalDiskMiB,
                         
-                        // Core metrics ingestion fields
                         cpu95th: cpuProfile.recommended95th,
                         cpuPeak: cpuProfile.peakPercent,
                         cpuAvg: cpuProfile.avgPercent,
@@ -709,20 +696,8 @@
                     raw: { clusters: clusterList, snaps: snapList, hosts: hostList }
                 });
             } catch (err) {
-                alert("Failed parsing site layout definitions: " + err.message);
+                alert("Failed parsing site array definitions: " + err.message);
             }
-        }
-
-        async function writeSiteFileToDisk(saveFileName, payload) {
-            if(!activeProjectDirectoryHandle) return;
-            try {
-                const finalName = `${saveFileName}.json`;
-                const fileHandle = await activeProjectDirectoryHandle.getFileHandle(finalName, { create: true });
-                const writableStream = await fileHandle.createWritable();
-                await writableStream.write(JSON.stringify(payload, null, 2));
-                await writableStream.close();
-                await scanAndRenderFileChips();
-            } catch (err) { console.error(err); }
         }
 
         function compileKpiPanels(dc, clusters, hosts, vms, gpus) {
@@ -752,7 +727,7 @@
                         <td class="p-3 font-bold text-slate-100">${v.name}</td>
                         <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] ${isRunning ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-500'}">${v.state}</span></td>
                         <td class="p-3 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus} Cores</td>
-                        <td class="p-3 text-right font-mono text-rose-400 font-black">${maxCpuVal > 0 ? maxCpuVal.toFixed(1) + '%' : '-'}</td>
+                        <td class="p-3 text-right font-mono text-rose-500 font-black">${maxCpuVal > 0 ? maxCpuVal.toFixed(1) + '%' : '-'}</td>
                         <td class="p-3 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)} GB</td>
                     `;
                     hotTbody.appendChild(tr);
@@ -860,14 +835,17 @@
                         <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
                     `;
                 } else {
-                    const cls95 = v.cpu95th >= 80 ? 'text-rose-500 font-black animate-pulse' : 'text-slate-400';
-                    const clsPeak = v.cpuPeak >= 80 ? 'text-rose-500 font-black' : 'text-slate-400';
+                    // Highlights high contention load records in striking bold red text layouts automatically
+                    const cls95 = v.cpu95th >= 80 ? 'text-rose-500 font-black font-bold animate-pulse' : 'text-slate-400';
+                    const clsPeak = v.cpuPeak >= 80 ? 'text-rose-500 font-black font-bold' : 'text-slate-400';
+                    const clsAvg = v.cpuAvg >= 80 ? 'text-rose-500 font-black font-bold' : 'text-slate-400';
+
                     tr.innerHTML = `
                         <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
                         <td class="px-6 py-3.5 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus}</td>
-                        <td class="px-6 py-3.5 text-right font-mono ${cls95}">${v.cpu95th > 0 ? v.cpu95th.toFixed(1) + '%' : '0.0%'}</td>
-                        <td class="px-6 py-3.5 text-right font-mono ${clsPeak}">${v.cpuPeak > 0 ? v.cpuPeak.toFixed(1) + '%' : '0.0%'}</td>
-                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${v.cpuAvg > 0 ? v.cpuAvg.toFixed(1) + '%' : '0.0%'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono ${cls95}">${v.cpu95th > 0 ? v.cpu95th.toFixed(2) + '%' : '0.0%'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono ${clsPeak}">${v.cpuPeak > 0 ? v.cpuPeak.toFixed(2) + '%' : '0.0%'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono ${clsAvg}">${v.cpuAvg > 0 ? v.cpuAvg.toFixed(2) + '%' : '0.0%'}</td>
                         <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
                     `;
                 }
@@ -886,7 +864,7 @@
             const tempVmTable = document.createElement('table');
             let vmHtml = `<thead><tr><th style="${headerStyleString}">VM Name</th><th style="${headerStyleString}">Power State</th><th style="${headerStyleString}">vCPUs</th><th style="${headerStyleString}">Allocated RAM (GB)</th><th style="${headerStyleString}">95th Percentile %</th><th style="${headerStyleString}">Peak %</th><th style="${headerStyleString}">Average %</th><th style="${headerStyleString}">Total vDisk Capacity (GB)</th><th style="${headerStyleString}">vPartition Configured (GB)</th><th style="${headerStyleString}">vPartition Consumed (GB)</th><th style="${headerStyleString}">Guest Operating System</th></tr></thead><tbody>`;
             vms.forEach(v => {
-                vmHtml += `<tr><td style="${dataStyleString}">${v.name}</td><td style="${dataStyleString}; text-align: center;">${v.state}</td><td style="${dataStyleString}; text-align: center;">${v.vcpus}</td><td style="${dataStyleString}; text-align: right;">${v.ramGB.toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${v.cpu95th.toFixed(1)}%</td><td style="${dataStyleString}; text-align: right;">${v.cpuPeak.toFixed(1)}%</td><td style="${dataStyleString}; text-align: right;">${v.cpuAvg.toFixed(1)}%</td><td style="${dataStyleString}; text-align: right;">${(v.vdiskCapMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${(v.partitionConfigMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${(v.partitionConsumedMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}">${v.os || '-'}</td></tr>`;
+                vmHtml += `<tr><td style="${dataStyleString}">${v.name}</td><td style="${dataStyleString}; text-align: center;">${v.state}</td><td style="${dataStyleString}; text-align: center;">${v.vcpus}</td><td style="${dataStyleString}; text-align: right;">${v.ramGB.toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${v.cpu95th.toFixed(2)}%</td><td style="${dataStyleString}; text-align: right;">${v.cpuPeak.toFixed(2)}%</td><td style="${dataStyleString}; text-align: right;">${v.cpuAvg.toFixed(2)}%</td><td style="${dataStyleString}; text-align: right;">${(v.vdiskCapMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${(v.partitionConfigMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${(v.partitionConsumedMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}">${v.os || '-'}</td></tr>`;
             });
             vmHtml += "</tbody>"; tempVmTable.innerHTML = vmHtml;
 
@@ -901,7 +879,7 @@
             const styledWorkbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempVmTable, { raw: true }), "Virtual Machine Details");
             XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempHostTable, { raw: true }), "Physical Fleet Inventory");
-            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.0.8.xlsx`);
+            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.0.9.xlsx`);
         }
     </script>
 </body>
