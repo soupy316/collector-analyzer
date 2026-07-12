@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>collector_analyzer | Enterprise Repository Suite</title>
     <!-- Tailwind CSS v4 via CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.tailwindcss.com/"></script>
     <!-- SheetJS (XLSX Parser & Exporter) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -15,8 +15,8 @@
     <header class="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <!-- Incremented Tracking Version Number Marker Tag to v1.0.3 -->
-                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.3</div>
+                <!-- Incremented Tracking Version Number Marker Tag to v1.0.4 -->
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.0.4</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
                     <p class="text-xs text-slate-400">Comprehensive Local Repository & 21-Tab Infrastructure Assessment Suite</p>
@@ -25,7 +25,6 @@
             
             <!-- File Input Upload -->
             <div id="uploadZone" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <input type="text" id="txtLocationName" placeholder="Saved Name (e.g., Stadium Cluster, Southside)..." class="px-3 py-2 bg-slate-900 border border-slate-700/60 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-medium w-full sm:w-80">
                 <label class="flex items-center justify-center gap-2.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl cursor-pointer transition-all text-sm font-medium shadow-lg shadow-indigo-600/10 group whitespace-nowrap">
                     <svg class="w-4 h-4 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     <span class="text-white">Process & Add Spreadsheet</span>
@@ -140,7 +139,7 @@
                 <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Active NVIDIA GPUs</p><p id="kpiGPUs" class="text-2xl font-black mt-1 text-amber-400">-</p></div>
             </div>
 
-            <!-- Section: 3 Comprehensive Allocation Rollup Summary Cards -->
+            <!-- Section: 3 Allocation Rollup Summary Cards -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Card 1: All VMs Summary -->
                 <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-xl shadow-md">
@@ -226,7 +225,6 @@
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                         <input type="text" id="vmSearch" placeholder="Filter virtual workloads..." class="w-full sm:w-64 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 transition-all shadow-inner">
                         
-                        <!-- Export Trigger Button -->
                         <button id="btnExportDataPackage" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             Export Inventory Package
@@ -404,7 +402,6 @@
             try {
                 activeProjectDirectoryHandle = await rootDirectoryHandle.getDirectoryHandle(selectedVal, { create: false });
                 document.getElementById('uploadZone').classList.remove('hidden');
-                document.getElementById('txtLocationName').value = '';
                 
                 const formattedName = selectedVal.replace(/_/g, ' ');
                 document.getElementById('lblCustomerClusters').innerText = `${formattedName} Clusters:`;
@@ -441,7 +438,6 @@
                 toggleCreateCustomerMode();
                 document.getElementById('selCustomer').value = cleanFolder;
                 document.getElementById('uploadZone').classList.remove('hidden');
-                document.getElementById('txtLocationName').value = '';
                 document.getElementById('lblCustomerClusters').innerText = `${inputVal} Clusters:`;
                 await scanAndRenderFileChips();
             } catch(err) { alert("Failed constructing directory mapping."); }
@@ -472,12 +468,19 @@
                     selectBtn.innerText = fileKey;
                     selectBtn.onclick = () => loadCachedSiteFile(fileKey);
 
+                    // REFACTORED IN v1.0.4: Added a clean pencil button wrapper to allow inline file renames seamlessly
+                    const renameBtn = document.createElement('button');
+                    renameBtn.className = "px-2 py-1 bg-slate-900/20 text-slate-400 hover:text-amber-400 border-l border-slate-700/40 transition-colors text-[10px] cursor-pointer";
+                    renameBtn.innerHTML = "✏️";
+                    renameBtn.onclick = (e) => { e.stopPropagation(); triggerInlineFileRenameSequence(fileKey); };
+
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = "px-2 py-1 bg-slate-900/40 text-slate-500 hover:text-rose-400 hover:bg-rose-950/20 border-l border-slate-700/60 transition-all text-xs font-black cursor-pointer";
                     deleteBtn.innerHTML = "&times;";
                     deleteBtn.onclick = (e) => { e.stopPropagation(); removeSpecificSiteFile(fileKey); };
 
                     chipGroup.appendChild(selectBtn);
+                    chipGroup.appendChild(renameBtn);
                     chipGroup.appendChild(deleteBtn);
                     chipContainer.appendChild(chipGroup);
                 });
@@ -487,6 +490,39 @@
                 document.getElementById('locationSelectorZone').classList.add('hidden');
                 document.getElementById('welcomeState').classList.remove('hidden');
                 document.getElementById('dashboardState').classList.add('hidden');
+            }
+        }
+
+        // REFACTORED METHOD IN v1.0.4: Safely renames the actual JSON snapshot entry on disk handles without dataloss
+        async function triggerInlineFileRenameSequence(oldDisplayKey) {
+            const userNewName = prompt(`Enter a new custom name for cluster resource metadata snapshot [ ${oldDisplayKey} ]:`, oldDisplayKey);
+            if (!userNewName || !userNewName.trim() || userNewName.trim() === oldDisplayKey) return;
+
+            const cleanNewDisplayKey = userNewName.replace(/[^a-z0-9_ ]/gi, '').trim();
+            const cleanOldStorageKey = oldDisplayKey.replace(/ /g, '_');
+            const cleanNewStorageKey = cleanNewDisplayKey.replace(/ /g, '_');
+
+            try {
+                // Read from old handle source
+                const oldFileHandle = await activeProjectDirectoryHandle.getFileHandle(`${cleanOldStorageKey}.json`, { create: false });
+                const oldFile = await oldFileHandle.getFile();
+                const textContent = await oldFile.text();
+
+                // Generate new file destination mapping copy
+                const newFileHandle = await activeProjectDirectoryHandle.getFileHandle(`${cleanNewStorageKey}.json`, { create: true });
+                const writableStream = await newFileHandle.createWritable();
+                await writableStream.write(textContent);
+                await writableStream.close();
+
+                // Drop old file footprint reference safely
+                await activeProjectDirectoryHandle.removeEntry(`${cleanOldStorageKey}.json`);
+                
+                // Hide viewports and force workspace redrawing sequences
+                document.getElementById('dashboardState').classList.add('hidden');
+                document.getElementById('welcomeState').classList.remove('hidden');
+                await scanAndRenderFileChips();
+            } catch (err) {
+                alert("Failed moving internal storage handles: " + err.message);
             }
         }
 
@@ -520,35 +556,40 @@
                 renderSnapshotRiskRegister(stateObj.raw.snaps);
                 renderPhysicalFleetRegister(stateObj.raw.hosts);
                 renderWorkloadLedger(window.environmentCache.vmRollup);
-                
-                document.getElementById('txtLocationName').value = fileKey;
             } catch(err) { 
                 console.error(err);
                 alert("Error during cached file restoration procedures. File format mismatch."); 
             }
         }
 
+        // REFACTORED METHOD IN v1.0.4: Requires clear user naming assignment and enforces absolute timestamp format mm.dd.yy strings
         function parseAuditWorkbook(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            let targetName = document.getElementById('txtLocationName').value.trim();
-            if(!targetName) {
-                const promptName = prompt(`Please provide a readable name for this specific infrastructure upload asset:`, "Stadium Cluster");
-                if (promptName && promptName.trim()) targetName = promptName.trim();
-                else targetName = file.name.replace(/\.[^/.]+$/, "");
+            // Step 1: Force strict naming protocol prompt
+            const promptName = prompt(`Please input a clear descriptor label for this infrastructure workbook (e.g., Production, DR Site, DMZ Stack):`);
+            if (!promptName || !promptName.trim()) {
+                alert("Upload aborted: A descriptive title assignment is strictly mandatory to prevent sketchy file collisions.");
+                e.target.value = ''; // wipe selection
+                return;
             }
 
-            const cleanDisplayKey = targetName.replace(/[^a-z0-9_ ]/gi, '').trim();
-            const cleanStorageFileKey = cleanDisplayKey.replace(/ /g, '_');
+            // Step 2: Inject perfect calendar timestamp format string mm.dd.yy natively
+            const d = new Date();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const yy = String(d.getFullYear()).slice(-2);
+            const dateStringToken = `${mm}.${dd}.${yy}`;
 
-            if (currentLoadedFilesMap[cleanDisplayKey]) {
-                const choice = confirm(`A record named "${cleanDisplayKey}" already exists. Save as a new version?`);
-                if (choice) {
-                    const stamp = new Date().toISOString().split('T')[0];
-                    processFilePayload(file, `${cleanStorageFileKey}_${stamp}`);
-                    return;
-                }
+            const baseCleanTitle = promptName.replace(/[^a-z0-9_ ]/gi, '').trim();
+            const finalDisplayTitle = `${baseCleanTitle} ${dateStringToken}`;
+            const cleanStorageFileKey = finalDisplayTitle.replace(/ /g, '_');
+
+            if (currentLoadedFilesMap[finalDisplayTitle]) {
+                alert(`A structural record token assigned to "${finalDisplayTitle}" already occupies this cluster index space. Choose a different name variant.`);
+                e.target.value = '';
+                return;
             }
             processFilePayload(file, cleanStorageFileKey);
         }
@@ -698,8 +739,7 @@
                 await writableStream.write(JSON.stringify(payload, null, 2));
                 await writableStream.close();
                 await scanAndRenderFileChips();
-                document.getElementById('txtLocationName').value = saveFileName.replace(/_/g, ' ');
-                alert(`Successfully saved collection record: /${activeProjectDirectoryHandle.name}/${finalName}`);
+                alert(`Successfully saved collection record token: ${finalName}`);
             } catch (err) { 
                 alert("Failed auto-committing local file record matrix: " + err.message); 
             }
@@ -811,7 +851,6 @@
             });
         }
 
-        // UPGRADED STYLING METHOD: Spins up styled DOM layout structures in-memory to inject custom border lines and Iris Purple headers into SheetJS sheets natively
         function triggerExcelDataExportSequence() {
             const vms = window.environmentCache.vmRollup || [];
             const hosts = window.environmentCache.rawHostsMetadata || [];
@@ -821,7 +860,6 @@
             const headerStyleString = "background-color: #7855fa; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #000000;";
             const dataStyleString = "border: 1px solid #000000;";
 
-            // Construct DOM Table 1: Virtual Machine Details
             const tempVmTable = document.createElement('table');
             let vmHtml = `<thead><tr>
                 <th style="${headerStyleString}">VM Name</th>
@@ -849,7 +887,6 @@
             vmHtml += "</tbody>";
             tempVmTable.innerHTML = vmHtml;
 
-            // Construct DOM Table 2: Physical Fleet Inventory
             const tempHostTable = document.createElement('table');
             let hostHtml = `<thead><tr>
                 <th style="${headerStyleString}">Hostname / IP Node</th>
@@ -878,7 +915,6 @@
             hostHtml += "</tbody>";
             tempHostTable.innerHTML = hostHtml;
 
-            // Bind in-memory styled DOM tables into a multi-tab SheetJS package workbook natively
             const styledWorkbook = XLSX.utils.book_new();
 
             const vmWorksheet = XLSX.utils.table_to_sheet(tempVmTable, { raw: true });
@@ -887,9 +923,8 @@
             const hostWorksheet = XLSX.utils.table_to_sheet(tempHostTable, { raw: true });
             XLSX.utils.book_append_sheet(styledWorkbook, hostWorksheet, "Physical Fleet Inventory");
 
-            // Deploy download string action
-            const fileTitleStamp = document.getElementById('txtLocationName').value.trim().replace(/ /g, '_') || "Infrastructure_Assessment";
-            XLSX.writeFile(styledWorkbook, `${fileTitleStamp}_Package_v1.0.3.xlsx`);
+            const fileTitleStamp = "Infrastructure_Assessment";
+            XLSX.writeFile(styledWorkbook, `${fileTitleStamp}_Package_v1.0.4.xlsx`);
         }
     </script>
 </body>
