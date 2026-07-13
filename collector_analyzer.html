@@ -15,8 +15,8 @@
     <header class="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-[1600px] mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <!-- Incremented Tracking Version Number Marker Tag to v1.1.0 -->
-                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.1.0</div>
+                <!-- Incremented Tracking Version Number Marker Tag to v1.1.1 -->
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.1.1</div>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
                     <p class="text-xs text-slate-400">Comprehensive Local Repository & 21-Tab Infrastructure Assessment Suite</p>
@@ -610,26 +610,15 @@
                 const vdiskTabList = sheets['vdisk'] || [];
                 const vcpuPerformanceList = sheets['vcpu'] || [];
 
-                // RE-ENGINEERED IN v1.1.0: Dynamic substring key tracker for sanitized fields
-                const extractValueByFuzzyMatch = (row, labelToken) => {
-                    const token = labelToken.toLowerCase();
-                    for (const key in row) {
-                        const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        if (cleanKey.includes(token)) {
-                            return parseFloat(row[key]) || 0;
-                        }
-                    }
-                    return 0;
-                };
-
+                // RE-ENGINEERED IN v1.1.1: Direct strict property extraction mapped to explicit sheet header columns
                 const vcpuDataMap = {};
                 vcpuPerformanceList.forEach(v => {
                     const vmName = v['VM Name'] || v['VM'] || v['Name'];
                     if(vmName) {
                         vcpuDataMap[vmName] = {
-                            recommended95th: extractValueByFuzzyMatch(v, '95th'),
-                            peakPercent: extractValueByFuzzyMatch(v, 'peak'),
-                            avgPercent: extractValueByFuzzyMatch(v, 'average') || extractValueByFuzzyMatch(v, 'avg')
+                            recommended95th: parseFloat(v['95th Percentile % (recommended)'] || v['95th Percentile'] || 0),
+                            peakPercent: parseFloat(v['Peak %'] || v['Peak'] || 0),
+                            avgPercent: parseFloat(v['Average %'] || v['Average'] || 0)
                         };
                     }
                 });
@@ -696,7 +685,7 @@
                     raw: { clusters: clusterList, snaps: snapList, hosts: hostList }
                 });
             } catch (err) {
-                alert("Failed parsing site layout: " + err.message);
+                alert("Failed parsing site array layout: " + err.message);
             }
         }
 
@@ -835,10 +824,9 @@
                         <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
                     `;
                 } else {
-                    // Highlights high contention load records in striking bold red text layouts automatically
-                    const cls95 = v.cpu95th >= 80 ? 'text-rose-500 font-bold animate-pulse' : 'text-slate-400';
-                    const clsPeak = v.cpuPeak >= 80 ? 'text-rose-500 font-bold' : 'text-slate-400';
-                    const clsAvg = v.cpuAvg >= 80 ? 'text-rose-500 font-bold' : 'text-slate-400';
+                    const cls95 = v.cpu95th >= 80 ? 'text-rose-500 font-bold font-black animate-pulse' : 'text-slate-400';
+                    const clsPeak = v.cpuPeak >= 80 ? 'text-rose-500 font-bold font-black' : 'text-slate-400';
+                    const clsAvg = v.cpuAvg >= 80 ? 'text-rose-500 font-bold font-black' : 'text-slate-400';
 
                     tr.innerHTML = `
                         <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
@@ -891,7 +879,7 @@
             const styledWorkbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempVmTable, { raw: true }), "Virtual Machine Details");
             XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempHostTable, { raw: true }), "Physical Fleet Inventory");
-            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.1.0.xlsx`);
+            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.1.1.xlsx`);
         }
     </script>
 </body>
