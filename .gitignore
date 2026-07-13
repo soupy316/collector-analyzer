@@ -1,12 +1,12 @@
+# Ignore local Python virtual environment folders
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Ignore heavy processed customer databases and raw workbook uploads
+uploads/
+customers/
+
+# Ignore Mac system files
 .DS_Store
-*.json
-/*/
-.DS_Store
-*.json
-/*/
-.DS_Store
-*.json
-/*/
-.DS_Store
-*.json
-/*/

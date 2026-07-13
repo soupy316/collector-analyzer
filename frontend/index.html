@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>collector_analyzer | Enterprise Repository Suite</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com/"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800/80 bg-slate-900/40 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-[1600px] mx-auto px-4 py-3.5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl text-white font-black tracking-tight text-xs shadow-lg shadow-indigo-500/10">vANALYST v1.1.4</div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-slate-100 flex items-center gap-2">collector_analyzer</h1>
+                    <p class="text-xs text-slate-400">Comprehensive Python Backend & 21-Tab Infrastructure Assessment Suite</p>
+                </div>
+            </div>
+            
+            <!-- File Input Upload -->
+            <div id="uploadZone" class="hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <label class="flex items-center justify-center gap-2.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-xl cursor-pointer transition-all shadow-lg shadow-indigo-600/10 group whitespace-nowrap">
+                    <svg class="w-4 h-4 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>Process & Add Spreadsheet</span>
+                    <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8">
+        
+        <!-- Local Directory Workspace Control Bar -->
+        <div class="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 shadow-xl backdrop-blur-sm">
+            <div class="flex items-center gap-4">
+                <div id="workspaceIndicator" class="w-3 h-3 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50 shrink-0"></div>
+                <div>
+                    <h2 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Local Compute Ecosystem Connection</h2>
+                    <p id="workspacePath" class="text-xs text-slate-500 mt-0.5 font-medium">Connecting to Python API engine on port 5001...</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 w-full lg:w-auto justify-end">
+                <div id="projectControls" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                    <div class="relative flex-1 sm:w-64">
+                        <select id="selCustomer" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer">
+                            <option value="">-- Select Existing Customer --</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                    </div>
+
+                    <input type="text" id="txtCustomerSearch" placeholder="🔍 Search..." class="px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 placeholder-slate-600 focus:outline-none w-full sm:w-28">
+
+                    <button id="btnOpenCustomer" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer">
+                        Open
+                    </button>
+                    
+                    <div class="h-6 w-px bg-slate-800 hidden sm:block"></div>
+
+                    <button id="btnTriggerCreateMode" class="px-3 py-2 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 font-medium text-xs rounded-xl transition-all cursor-pointer">
+                        + New Customer
+                    </button>
+                </div>
+
+                <div id="createControls" class="hidden items-center gap-3 w-full lg:w-auto transition-all">
+                    <input type="text" id="txtNewCustomerName" placeholder="Enter New Customer Name..." class="px-3 py-2 bg-slate-950 border border-indigo-500/40 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-semibold w-full sm:w-64">
+                    <button id="btnCreateCustomer" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer">
+                        Create Folder
+                    </button>
+                    <button id="btnCancelCreate" class="text-xs text-slate-400 hover:text-slate-200 px-2 py-1 font-medium cursor-pointer">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Collector Sub-Files Index Bar -->
+        <div id="locationSelectorZone" class="hidden bg-slate-900/30 border border-slate-800/60 px-4 py-3 rounded-xl mb-6 items-center gap-4 overflow-x-auto">
+            <span id="lblCustomerClusters" class="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Customer Clusters:</span>
+            <div id="locationChipContainer" class="flex items-center gap-2"></div>
+        </div>
+
+        <!-- Welcome Screen -->
+        <div id="welcomeState" class="flex flex-col items-center justify-center border border-slate-800 bg-slate-900/10 rounded-2xl py-24 px-6 text-center my-8 shadow-xl max-w-2xl mx-auto">
+            <div class="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mb-5 shadow-inner">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2zm5-2V3a1 1 0 011-1h6a1 1 0 011 1v2M5 7h14"/></svg>
+            </div>
+            <h2 id="welcomeHeader" class="text-xl font-bold text-slate-100 tracking-tight mb-2">Python Engine Synced</h2>
+            <p id="welcomeText" class="text-slate-400 text-sm leading-relaxed max-w-md">Choose a customer folder from the top bar or click "+ New Customer" to start analyzing cluster workbooks.</p>
+        </div>
+
+        <!-- Dashboard UI Workspace -->
+        <div id="dashboardState" class="hidden space-y-6">
+            <!-- Global Inventory Rollup KPIs -->
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-4">
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Datacenters</p><p id="kpiDC" class="text-2xl font-black mt-1 text-indigo-400">-</p></div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Clusters</p><p id="kpiClusters" class="text-2xl font-black mt-1 text-purple-400">-</p></div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">ESXi Hosts</p><p id="kpiHosts" class="text-2xl font-black mt-1 text-cyan-400">-</p></div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Total Configured VMs</p><p id="kpiVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
+                <div class="bg-slate-900/40 border border-slate-800/80 p-4 rounded-xl shadow-sm"><p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Powered On VMs</p><p id="kpiActiveVMs" class="text-2xl font-black mt-1 text-emerald-400">-</p></div>
+                
+                <!-- Dynamic Hot CPU Action Panel Selector Widget -->
+                <div id="cardHotCpuTrigger" class="bg-slate-900/40 border border-rose-900/40 hover:border-rose-500/50 p-4 rounded-xl shadow-sm cursor-pointer transition-all hover:bg-slate-900/80 group">
+                    <div class="flex items-center justify-between">
+                        <p class="text-[10px] text-rose-400 font-bold uppercase tracking-wider flex items-center gap-1">🔥 Hot CPU VMs</p>
+                        <span class="text-[10px] text-slate-500 group-hover:text-rose-400 transition-colors">Expand ▾</span>
+                    </div>
+                    <p id="kpiHotCpuCount" class="text-2xl font-black mt-1 text-rose-500">-</p>
+                </div>
+            </div>
+
+            <!-- HIDDEN EXPANDABLE REGISTRY BLOCK -->
+            <div id="hotCpuDropdownPanel" class="hidden bg-rose-950/10 border border-rose-900/50 rounded-2xl p-5 space-y-3 shadow-inner animate-fadeIn">
+                <div>
+                    <h3 class="text-sm font-bold text-rose-400 flex items-center gap-2">⚠️ Compute Risk Node Registry</h3>
+                    <p class="text-xs text-slate-400">Workloads matching thresholds: High Density Allocation (&ge; 16 vCPUs) or High Performance Contention (&ge; 80% Peak CPU usage)</p>
+                </div>
+                <div class="overflow-y-auto max-h-[220px] border border-rose-900/30 rounded-xl bg-slate-950/40">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-rose-950/30 text-rose-300 font-semibold uppercase tracking-wider border-b border-rose-900/40">
+                                <th class="p-3">VM Name</th>
+                                <th class="p-3 text-center">Power State</th>
+                                <th class="p-3 text-center">Allocated vCPUs</th>
+                                <th class="p-3 text-right">Max CPU % Spikes</th>
+                                <th class="p-3 text-right">Assigned Memory</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hotCpuTableBody" class="divide-y divide-rose-900/20 text-slate-300 font-medium"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section: 3 Allocation Rollup Summary Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Card 1: All VMs Summary -->
+                <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-xl shadow-md">
+                    <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span> All VMs Summary
+                    </h3>
+                    <table class="w-full text-xs font-medium divide-y divide-slate-800/40">
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400"># VMs</td><td id="sumAllCount" class="font-mono text-slate-200">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vCPU</td><td id="sumAllVcpu" class="font-mono text-indigo-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Memory</td><td id="sumAllMem" class="font-mono text-cyan-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vDisk</td><td id="sumAllDisk" class="font-mono text-purple-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumAllPartCfg" class="font-mono text-amber-400/90">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumAllPartUsed" class="font-mono text-emerald-400">-</td></tr>
+                    </table>
+                </div>
+
+                <!-- Card 2: Powered On VMs Summary -->
+                <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-xl shadow-md">
+                    <h3 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/50"></span> Powered On VMs Summary
+                    </h3>
+                    <table class="w-full text-xs font-medium divide-y divide-slate-800/40">
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400"># VMs</td><td id="sumOnCount" class="font-mono text-emerald-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vCPU</td><td id="sumOnVcpu" class="font-mono text-indigo-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Memory</td><td id="sumOnMem" class="font-mono text-cyan-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vDisk</td><td id="sumOnDisk" class="font-mono text-purple-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumOnPartCfg" class="font-mono text-amber-400/90">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumOnPartUsed" class="font-mono text-emerald-400">-</td></tr>
+                    </table>
+                </div>
+
+                <!-- Card 3: Powered Off VMs Summary -->
+                <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-xl shadow-md">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-slate-600"></span> Powered Off VMs Summary
+                    </h3>
+                    <table class="w-full text-xs font-medium divide-y divide-slate-800/40">
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400"># VMs</td><td id="sumOffCount" class="font-mono text-slate-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vCPU</td><td id="sumOffVcpu" class="font-mono text-indigo-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Memory</td><td id="sumOffMem" class="font-mono text-cyan-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">vDisk</td><td id="sumOffDisk" class="font-mono text-purple-400">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Cfg</td><td id="sumOffPartCfg" class="font-mono text-amber-400/90">-</td></tr>
+                        <tr class="py-2 flex justify-between"><td class="text-slate-400">Partition Used</td><td id="sumOffPartUsed" class="font-mono text-emerald-400">-</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Fleet Registries Grid layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4 lg:col-span-1">
+                    <div><h3 class="text-sm font-bold text-slate-200">Active Storage Risks: Snapshot Footprint</h3><p class="text-xs text-slate-400">Orphaned checkpoints consuming block storage layers</p></div>
+                    <div class="overflow-y-auto max-h-[300px] border border-slate-800/60 rounded-lg">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead><tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800"><th class="p-2.5">VM Name</th><th class="p-2.5">Snapshot Label</th><th class="p-2.5 text-right">Size (MiB)</th></tr></thead>
+                            <tbody id="snapshotTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 p-5 space-y-4 lg:col-span-2">
+                    <div><h3 class="text-sm font-bold text-slate-200">Physical Compute Node Fleet Inventory</h3><p class="text-xs text-slate-400">Hardware specs managed on disk</p></div>
+                    <div class="overflow-y-auto max-h-[300px] border border-slate-800/60 rounded-lg">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                                    <th class="p-2.5">Hostname</th>
+                                    <th class="p-2.5">HW Model</th>
+                                    <th class="p-2.5">CPU Model</th>
+                                    <th class="p-2.5 text-center">CPU GHz</th>
+                                    <th class="p-2.5 text-right">Memory</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hostTableBody" class="divide-y divide-slate-800/40 text-slate-300"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Virtual Machine Details Ledger -->
+            <div class="bg-slate-900/40 rounded-xl border border-slate-800/80 overflow-hidden shadow-2xl">
+                <div class="p-5 border-b border-slate-800 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-slate-900/20">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full xl:w-auto">
+                        <h3 class="text-sm font-bold text-slate-200 shrink-0">Virtual Machine Ledger</h3>
+                        
+                        <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800 shrink-0">
+                            <button id="toggleViewVmDetails" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer">
+                                Per VM Details
+                            </button>
+                            <button id="toggleViewCpuDetails" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer">
+                                Per VM CPU Details
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
+                        <input type="text" id="vmSearch" placeholder="Filter workloads..." class="w-full sm:w-56 px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 transition-all shadow-inner">
+                        
+                        <button id="btnExportDataPackage" class="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-1.5 whitespace-nowrap">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Export Inventory Package
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead id="vmTableHeaderTarget"></thead>
+                        <tbody id="vmTableBody" class="divide-y divide-slate-800/50 text-slate-300"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "http://127.0.0.1:5001/api";
+        let activeCustomer = null;
+        window.environmentCache = {};
+        let activeLedgerContextView = 'vm'; 
+
+        // DOM Triggers
+        const selCustomer = document.getElementById('selCustomer');
+        const txtSearch = document.getElementById('txtCustomerSearch');
+        const fileInput = document.getElementById('excelFile');
+
+        document.getElementById('btnOpenCustomer').addEventListener('click', openCustomerFolder);
+        document.getElementById('btnTriggerCreateMode').addEventListener('click', toggleCreateMode);
+        document.getElementById('btnCancelCreate').addEventListener('click', toggleCreateMode);
+        document.getElementById('btnCreateCustomer').addEventListener('click', createCustomerFolder);
+        document.getElementById('btnExportDataPackage').addEventListener('click', triggerExcelDataExportSequence);
+        
+        document.getElementById('toggleViewVmDetails').addEventListener('click', () => { swapActiveLedgerContext('vm'); });
+        document.getElementById('toggleViewCpuDetails').addEventListener('click', () => { swapActiveLedgerContext('cpu'); });
+        txtSearch.addEventListener('input', refreshCustomerDropdown);
+        fileInput.addEventListener('change', uploadSpreadsheetPayload);
+
+        document.getElementById('cardHotCpuTrigger').addEventListener('click', () => {
+            const block = document.getElementById('hotCpuDropdownPanel');
+            block.classList.toggle('hidden'); block.classList.toggle('flex');
+        });
+
+        window.addEventListener('DOMContentLoaded', fetchCustomersList);
+
+        async function fetchCustomersList() {
+            try {
+                const res = await fetch(`${API_URL}/customers`);
+                window.allCustomers = await res.json();
+                refreshCustomerDropdown();
+                
+                document.getElementById('workspaceIndicator').className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40";
+                document.getElementById('workspacePath').innerText = "Multi-Tier Python Infrastructure Engine Connected Natively.";
+            } catch (err) {
+                document.getElementById('workspacePath').innerText = "❌ Python API Offline. Run 'python backend/app.py' in your terminal window.";
+            }
+        }
+
+        function refreshCustomerDropdown() {
+            const q = txtSearch.value.toLowerCase();
+            selCustomer.innerHTML = '<option value="">-- Select Existing Customer --</option>';
+            if(window.allCustomers) {
+                window.allCustomers.forEach(c => {
+                    if(c.toLowerCase().includes(q)) {
+                        const opt = document.createElement('option');
+                        opt.value = c; opt.innerText = c.replace(/_/g, ' ');
+                        selCustomer.appendChild(opt);
+                    }
+                });
+            }
+        }
+
+        async function openCustomerFolder() {
+            activeCustomer = selCustomer.value;
+            if(!activeCustomer) return;
+            document.getElementById('uploadZone').classList.remove('hidden');
+            document.getElementById('lblCustomerClusters').innerText = `${activeCustomer.replace(/_/g, ' ')} Clusters:`;
+            await refreshClusterChips();
+        }
+
+        async function refreshClusterChips() {
+            const res = await fetch(`${API_URL}/clusters/${activeCustomer}`);
+            const clusters = await res.json();
+            const container = document.getElementById('locationChipContainer');
+            container.innerHTML = '';
+
+            if(clusters.length > 0) {
+                document.getElementById('locationSelectorZone').className = "bg-slate-900/30 border border-slate-800/60 px-4 py-3 rounded-xl mb-6 flex items-center gap-4 overflow-x-auto";
+                clusters.forEach(c => {
+                    const btn = document.createElement('button');
+                    btn.className = "px-3 py-1 bg-slate-800 border border-slate-700 text-slate-200 text-xs font-medium rounded-xl hover:bg-slate-700 transition-colors cursor-pointer";
+                    btn.innerText = c.replace(/_/g, ' ');
+                    btn.onclick = () => loadClusterJsonData(c);
+                    container.appendChild(btn);
+                });
+                document.getElementById('welcomeState').classList.add('hidden');
+            } else {
+                document.getElementById('locationSelectorZone').className = "hidden";
+                document.getElementById('welcomeState').classList.remove('hidden');
+                document.getElementById('dashboardState').classList.add('hidden');
+            }
+        }
+
+        async function loadClusterJsonData(clusterKey) {
+            const res = await fetch(`${API_URL}/data/${activeCustomer}/${clusterKey}`);
+            const stateObj = await res.json();
+            window.environmentCache = stateObj.cache;
+            window.environmentCache.rawHostsMetadata = stateObj.raw.hosts || [];
+
+            document.getElementById('welcomeState').classList.add('hidden');
+            document.getElementById('dashboardState').classList.remove('hidden');
+
+            compileKpiPanels(stateObj.kpis.dc, stateObj.kpis.clusters, stateObj.kpis.hosts, window.environmentCache.vmRollup);
+            renderSnapshotRiskRegister(stateObj.raw.snaps);
+            renderPhysicalFleetRegister(stateObj.raw.hosts);
+            renderWorkloadLedger(window.environmentCache.vmRollup);
+        }
+
+        async function uploadSpreadsheetPayload(e) {
+            const file = e.target.files[0];
+            if(!file || !activeCustomer) return;
+
+            const label = prompt("Enter a descriptor label for this workbook (e.g., Production, DR Stack):");
+            if(!label || !label.trim()) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('customer', activeCustomer);
+            formData.append('label', label.trim());
+
+            document.getElementById('workspacePath').innerText = "⏳ Processing workbook inside Pandas core pipelines...";
+            
+            const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
+            const result = await res.json();
+            
+            if(result.error) {
+                alert("Processing Error: " + result.error);
+                document.getElementById('workspacePath').innerText = "❌ Parsing failed. Check backend log.";
+            } else {
+                await refreshClusterChips();
+                await loadClusterJsonData(result.file.replace('.json', ''));
+            }
+            fetchCustomersList();
+        }
+
+        function toggleCreateMode() {
+            document.getElementById('projectControls').classList.toggle('hidden');
+            document.getElementById('projectControls').classList.toggle('flex');
+            document.getElementById('createControls').classList.toggle('hidden');
+            document.getElementById('createControls').classList.toggle('flex');
+        }
+
+        async function createCustomerFolder() {
+            const name = document.getElementById('txtNewCustomerName').value.trim();
+            if(!name) return;
+            await fetch(`${API_URL}/customers`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name: name })
+            });
+            toggleCreateMode();
+            await fetchCustomersList();
+            selCustomer.value = name.replace(/ /g, '_');
+            openCustomerFolder();
+        }
+
+        function swapActiveLedgerContext(viewMode) {
+            activeLedgerContextView = viewMode;
+            const btnVm = document.getElementById('toggleViewVmDetails');
+            const btnCpu = document.getElementById('toggleViewCpuDetails');
+            if(viewMode === 'vm') {
+                btnVm.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer";
+                btnCpu.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer";
+            } else {
+                btnCpu.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white cursor-pointer";
+                btnVm.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-200 cursor-pointer";
+            }
+            if(window.environmentCache.vmRollup) renderWorkloadLedger(window.environmentCache.vmRollup);
+        }
+
+        function compileKpiPanels(dc, clusters, hosts, vms) {
+            document.getElementById('kpiDC').innerText = dc;
+            document.getElementById('kpiClusters').innerText = clusters;
+            document.getElementById('kpiHosts').innerText = hosts;
+            document.getElementById('kpiVMs').innerText = vms.length;
+            
+            const running = vms.filter(v => String(v.state || '').toLowerCase().includes('on'));
+            document.getElementById('kpiActiveVMs').innerText = running.length;
+
+            const hotCpu = vms.filter(v => v.vcpus >= 16 || v.cpu95th >= 80 || v.cpuPeak >= 80);
+            document.getElementById('kpiHotCpuCount').innerText = hotCpu.length;
+
+            const hotTbody = document.getElementById('hotCpuTableBody');
+            hotTbody.innerHTML = '';
+            if(hotCpu.length === 0) {
+                hotTbody.innerHTML = `<tr><td colspan="5" class="p-3 text-center text-slate-500 italic">No compute contention layers found.</td></tr>`;
+            } else {
+                hotCpu.forEach(v => {
+                    const tr = document.createElement('tr'); tr.className = "hover:bg-rose-950/10 border-b border-rose-900/10";
+                    const maxCpuVal = Math.max(v.cpu95th, v.cpuPeak);
+                    tr.innerHTML = `
+                        <td class="p-3 font-bold text-slate-100">${v.name}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400">${v.state}</span></td>
+                        <td class="p-3 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus} Cores</td>
+                        <td class="p-3 text-right font-mono text-rose-500 font-black">${maxCpuVal > 0 ? maxCpuVal.toFixed(1) + '%' : '-'}</td>
+                        <td class="p-3 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)} GB</td>
+                    `;
+                    hotTbody.appendChild(tr);
+                });
+            }
+
+            const summaries = {
+                all: { count: vms.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 },
+                on:  { count: running.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 },
+                off: { count: vms.length - running.length, vcpu: 0, mem: 0, diskMiB: 0, partCfgMiB: 0, partUsedMiB: 0 }
+            };
+
+            vms.forEach(v => {
+                const isRunning = String(v.state || '').toLowerCase().includes('on');
+                const targetCard = isRunning ? summaries.on : summaries.off;
+                summaries.all.vcpu += v.vcpus || 0; summaries.all.mem += v.ramGB || 0; summaries.all.diskMiB += v.vdiskCapMiB || 0; summaries.all.partCfgMiB += v.partitionConfigMiB || 0; summaries.all.partUsedMiB += v.partitionConsumedMiB || 0;
+                targetCard.vcpu += v.vcpus || 0; targetCard.mem += v.ramGB || 0; targetCard.diskMiB += v.vdiskCapMiB || 0; targetCard.partCfgMiB += v.partitionConfigMiB || 0; targetCard.partUsedMiB += v.partitionConsumedMiB || 0;
+            });
+
+            const injectCardData = (prefix, data) => {
+                document.getElementById(`sum${prefix}Count`).innerText = data.count.toLocaleString();
+                document.getElementById(`sum${prefix}Vcpu`).innerText = data.vcpu.toLocaleString();
+                document.getElementById(`sum${prefix}Mem`).innerText  = data.mem.toLocaleString(undefined, {maximumFractionDigits:1}) + " GB";
+                document.getElementById(`sum${prefix}Disk`).innerText = (data.diskMiB / 1024 / 1024).toLocaleString(undefined, {maximumFractionDigits:2}) + " TB";
+                document.getElementById(`sum${prefix}PartCfg`).innerText  = data.partCfgMiB > 0 ? (data.partCfgMiB / 1024 / 1024).toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '0.00 TB';
+                document.getElementById(`sum${prefix}PartUsed`).innerText = data.partUsedMiB > 0 ? (data.partUsedMiB / 1024 / 1024).toLocaleString(undefined, {maximumFractionDigits:2}) + " TB" : '0.00 TB';
+            };
+            injectCardData('All', summaries.all); injectCardData('On', summaries.on); injectCardData('Off', summaries.off);
+        }
+
+        function renderSnapshotRiskRegister(snaps) {
+            const tbody = document.getElementById('snapshotTableBody'); tbody.innerHTML = '';
+            if(!Array.isArray(snaps) || snaps.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-500 italic">No historical snapshots.</td></tr>`; return; }
+            snaps.slice(0, 20).forEach(s => {
+                const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors';
+                tr.innerHTML = `<td class="p-2.5 font-medium text-slate-200">${s['VM Name']}</td><td class="p-2.5 text-slate-400 truncate max-w-[140px]">${s['Snapshot Name']}</td><td class="p-2.5 text-right font-mono text-rose-400">${s['Size MiB (total)'].toLocaleString()} MiB</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderPhysicalFleetRegister(hosts) {
+            const tbody = document.getElementById('hostTableBody'); tbody.innerHTML = '';
+            if(!Array.isArray(hosts) || hosts.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 italic">No physical hosts found.</td></tr>`; return; }
+            hosts.slice(0, 20).forEach(h => {
+                const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-900/40 transition-colors text-[11px]';
+                tr.innerHTML = `
+                    <td class="p-2.5 font-medium text-slate-200 truncate max-w-[140px]">${h['Host Name']}</td>
+                    <td class="p-2.5 text-slate-400 truncate max-w-[120px]">${h['Model']}</td>
+                    <td class="p-2.5 text-slate-400 truncate max-w-[140px]">${h['CPU Model']}</td>
+                    <td class="p-2.5 text-center font-mono text-amber-400">${h['CPU Speed (GHz)'].toFixed(2)} GHz</td>
+                    <td class="p-2.5 text-right font-mono text-cyan-400">${h['Memory Size'].toFixed(0)} GB</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderWorkloadLedger(vms) {
+            const headerTarget = document.getElementById('vmTableHeaderTarget');
+            const tbody = document.getElementById('vmTableBody'); 
+            const query = document.getElementById('vmSearch').value.toLowerCase(); 
+            tbody.innerHTML = '';
+
+            if (activeLedgerContextView === 'vm') {
+                headerTarget.innerHTML = `
+                    <tr class="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
+                        <th class="px-6 py-3.5">VM Name</th>
+                        <th class="px-6 py-3.5">State</th>
+                        <th class="px-6 py-3.5 text-center">vCPUs</th>
+                        <th class="px-6 py-3.5 text-right">Memory (GB)</th>
+                        <th class="px-6 py-3.5 text-right">Total vDisk Capacity (GB)</th>
+                        <th class="px-6 py-3.5 text-right">vPartition Configured (GB)</th>
+                        <th class="px-6 py-3.5 text-right">vPartition Consumed (GB)</th>
+                        <th class="px-6 py-3.5 text-right">Guest OS</th>
+                    </tr>`;
+            } else {
+                headerTarget.innerHTML = `
+                    <tr class="bg-slate-900/80 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
+                        <th class="px-6 py-3.5">VM Name</th>
+                        <th class="px-6 py-3.5 text-center">vCPUs</th>
+                        <th class="px-6 py-3.5 text-right">95th Percentile % (recommended)</th>
+                        <th class="px-6 py-3.5 text-right">Peak %</th>
+                        <th class="px-6 py-3.5 text-right">Average %</th>
+                        <th class="px-6 py-3.5 text-right">Guest OS</th>
+                    </tr>`;
+            }
+
+            vms.forEach(v => {
+                if(query && !v.name.toLowerCase().includes(query) && !v.os.toLowerCase().includes(query)) return;
+                const tr = document.createElement('tr'); tr.className = "hover:bg-slate-900/50 transition border-b border-slate-900/40 font-medium text-slate-300";
+                
+                if (activeLedgerContextView === 'vm') {
+                    const badge = String(v.state || '').toLowerCase().includes('on') ? '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Active</span>' : '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-500">Off</span>';
+                    tr.innerHTML = `
+                        <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
+                        <td class="px-6 py-3.5">${badge}</td>
+                        <td class="px-6 py-3.5 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-cyan-400">${v.ramGB.toFixed(1)}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-purple-400">${(v.vdiskCapMiB / 1024).toFixed(1)}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${v.partitionConfigMiB > 0 ? (v.partitionConfigMiB/1024).toFixed(1) : '-'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono text-slate-400">${v.partitionConsumedMiB > 0 ? (v.partitionConsumedMiB/1024).toFixed(1) : '-'}</td>
+                        <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
+                    `;
+                } else {
+                    const cls95 = v.cpu95th >= 80 ? 'text-rose-500 font-bold animate-pulse' : 'text-slate-400';
+                    const clsPeak = v.cpuPeak >= 80 ? 'text-rose-500 font-bold' : 'text-slate-400';
+                    const clsAvg = v.cpuAvg >= 80 ? 'text-rose-500 font-bold' : 'text-slate-400';
+
+                    tr.innerHTML = `
+                        <td class="px-6 py-3.5 font-bold text-slate-100 max-w-[180px] truncate">${v.name}</td>
+                        <td class="px-6 py-3.5 text-center font-mono ${v.vcpus >= 16 ? 'text-rose-400 font-black' : ''}">${v.vcpus}</td>
+                        <td class="px-6 py-3.5 text-right font-mono ${cls95}">${v.cpu95th > 0 ? v.cpu95th.toFixed(2) + '%' : '0.0%'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono ${clsPeak}">${v.cpuPeak > 0 ? v.cpuPeak.toFixed(2) + '%' : '0.0%'}</td>
+                        <td class="px-6 py-3.5 text-right font-mono ${clsAvg}">${v.cpuAvg > 0 ? v.cpuAvg.toFixed(2) + '%' : '0.0%'}</td>
+                        <td class="px-6 py-3.5 text-right text-slate-400 truncate max-w-[200px]">${v.os || '-'}</td>
+                    `;
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        function triggerExcelDataExportSequence() {
+            const vms = window.environmentCache.vmRollup || [];
+            const hosts = window.environmentCache.rawHostsMetadata || [];
+            if(vms.length === 0) return;
+
+            const headerStyleString = "background-color: #7855fa; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #000000;";
+            const dataStyleString = "border: 1px solid #000000;";
+
+            const tempVmTable = document.createElement('table');
+            let vmHtml = `<thead><tr><th style="${headerStyleString}">VM Name</th><th style="${headerStyleString}">Power State</th><th style="${headerStyleString}">vCPUs</th><th style="${headerStyleString}">Allocated RAM (GB)</th><th style="${headerStyleString}">95th Percentile %</th><th style="${headerStyleString}">Peak %</th><th style="${headerStyleString}">Average %</th><th style="${headerStyleString}">Total vDisk Capacity (GB)</th><th style="${headerStyleString}">vPartition Configured (GB)</th><th style="${headerStyleString}">vPartition Consumed (GB)</th><th style="${headerStyleString}">Guest Operating System</th></tr></thead><tbody>`;
+            vms.forEach(v => {
+                vmHtml += `<tr><td style="${dataStyleString}">${v.name}</td><td style="${dataStyleString}; text-align: center;">${v.state}</td><td style="${dataStyleString}; text-align: center;">${v.vcpus}</td><td style="${dataStyleString}; text-align: right;">${v.ramGB.toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${v.cpu95th.toFixed(2)}%</td><td style="${dataStyleString}; text-align: right;">${v.cpuPeak.toFixed(2)}%</td><td style="${dataStyleString}; text-align: right;">${v.cpuAvg.toFixed(2)}%</td><td style="${dataStyleString}; text-align: right;">${(v.vdiskCapMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${(v.partitionConfigMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}; text-align: right;">${(v.partitionConsumedMiB / 1024).toFixed(1)}</td><td style="${dataStyleString}">${v.os || '-'}</td></tr>`;
+            });
+            vmHtml += "</tbody>"; tempVmTable.innerHTML = vmHtml;
+
+            const tempHostTable = document.createElement('table');
+            let hostHtml = `<thead><tr><th style="${headerStyleString}">Hostname / IP Node</th><th style="${headerStyleString}">Hardware Manufacturer Model</th><th style="${headerStyleString}">Processor Model Specifications</th><th style="${headerStyleString}">Core Clock Metric (GHz)</th><th style="${headerStyleString}">Physical Capacity RAM (GB)</th></tr></thead><tbody>`;
+            hosts.forEach(h => {
+                hostHtml += `<tr><td style="${dataStyleString}">${h['Host Name']}</td><td style="${dataStyleString}">${h['Model']}</td><td style="${dataStyleString}">${h['CPU Model']}</td><td style="${dataStyleString}; text-align: center;">${h['CPU Speed (GHz)'].toFixed(2)}</td><td style="${dataStyleString}; text-align: right;">${h['Memory Size'].toFixed(0)}</td></tr>`;
+            });
+            hostHtml += "</tbody>"; tempHostTable.innerHTML = hostHtml;
+
+            const styledWorkbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempVmTable, { raw: true }), "Virtual Machine Details");
+            XLSX.utils.book_append_sheet(styledWorkbook, XLSX.utils.table_to_sheet(tempHostTable, { raw: true }), "Physical Fleet Inventory");
+            XLSX.writeFile(styledWorkbook, `Infrastructure_Assessment_Package_v1.1.4.xlsx`);
+        }
+    </script>
+</body>
+</html>
