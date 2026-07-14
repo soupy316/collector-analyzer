@@ -19,4 +19,4 @@ Because this application runs securely on your local machine, your Mac needs aut
 1. Open your Mac **Terminal** application (Press `Cmd + Space`, type *Terminal*, and hit Enter).
 2. Copy and paste the following line to clone the repository and grant it execution permissions:
    ```bash
-   git clone [https://github.com/YOUR_GITHUB_USERNAME/Collector-Analyzer-App.git](https://github.com/YOUR_GITHUB_USERNAME/Collector-Analyzer-App.git) && cd Collector-Analyzer-App && chmod +x run_app.command && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
+   git clone [https://github.com/soupy316/Collector-Analyzer-App.git](https://github.com/soupy316/Collector-Analyzer-App.git) && cd Collector-Analyzer-App && chmod +x run_app.command && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
